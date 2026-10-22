@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alta de Proveedor — Grupo CPC</title>
+<style>
+:root {
+  --navy:#1F3A52; --navy-deep:#142a3d; --teal:#1d7a6b; --teal-light:#e3f0ee;
+  --paper:#f6f4ee; --card:#ffffff; --ink:#23282b; --ink-soft:#5b6368;
+  --line:#dcd8cc; --red:#a3342f; --red-light:#fbe9e7;
+  --green:#3b7a3f; --green-light:#e9f3e8; --info:#1d5a8f; --info-light:#e6eff7;
+  --r:10px;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --serif:'Georgia','Times New Roman',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;min-height:100vh;}
+
+.topbar{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--teal);flex-wrap:wrap;gap:12px;}
+.brand{display:flex;align-items:baseline;gap:10px;}
+.brand .mark{font-family:var(--serif);font-size:22px;font-weight:700;}
+.brand .sub{font-size:11px;color:#c9d6dd;letter-spacing:.5px;text-transform:uppercase;}
+.topbar-link{font-size:12.5px;color:#c9d6dd;text-decoration:none;border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:6px;}
+.topbar-link:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+.container{max-width:920px;margin:0 auto;padding:32px 20px 80px;}
+.page-head{margin-bottom:28px;border-bottom:1px solid var(--line);padding-bottom:18px;}
+.page-head h1{font-family:var(--serif);font-size:27px;color:var(--navy-deep);margin-bottom:6px;}
+.page-head p{color:var(--ink-soft);font-size:14px;}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px 28px;margin-bottom:22px;}
+.section-title{font-family:var(--serif);font-size:17px;color:var(--navy-deep);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.section-title .num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:var(--navy);color:#fff;border-radius:50%;font-size:12px;font-weight:600;flex-shrink:0;}
+.section-desc{font-size:13px;color:var(--ink-soft);margin-bottom:18px;}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid.g3{grid-template-columns:1fr 1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.full{grid-column:1/-1;}
+label{font-size:12.5px;font-weight:600;color:var(--navy-deep);letter-spacing:.2px;}
+label .req{color:var(--red);margin-left:2px;}
+label .opt{color:var(--ink-soft);font-weight:400;font-size:11px;margin-left:4px;}
+input[type=text],input[type=email],input[type=tel],select,textarea{
+  font-family:var(--sans);font-size:14px;padding:9px 11px;
+  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);width:100%;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-light);}
+textarea{resize:vertical;min-height:68px;}
+.hint{font-size:11.5px;color:var(--ink-soft);}
+.err-msg{font-size:11.5px;color:var(--red);display:none;}
+.field.invalid input,.field.invalid select{border-color:var(--red);background:var(--red-light);}
+.field.invalid .err-msg{display:block;}
+
+/* ── DROP ZONES ── */
+.docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.drop-zone{border:1.5px dashed var(--line);border-radius:8px;padding:16px;background:#fbfaf6;transition:all .2s;}
+.drop-zone.dragover{border-color:var(--teal);background:var(--teal-light);}
+.drop-zone.has-files{border-color:var(--teal);border-style:solid;background:var(--teal-light);}
+.drop-zone.required-empty{border-color:var(--red);background:var(--red-light);}
+.dz-label{font-size:13px;font-weight:600;color:var(--navy-deep);margin-bottom:10px;}
+.dz-label .req{color:var(--red);}
+.dz-label .opt{color:var(--ink-soft);font-size:11px;font-weight:400;}
+.dz-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 8px;gap:6px;}
+.dz-icon{font-size:26px;line-height:1;}
+.dz-text{font-size:12.5px;color:var(--ink-soft);}
+.dz-browse{display:inline-block;margin-top:4px;font-size:12px;padding:6px 14px;border:1px solid var(--navy);border-radius:6px;background:#fff;color:var(--navy);cursor:pointer;font-family:var(--sans);}
+.dz-browse:hover{background:var(--navy);color:#fff;}
+.dz-browse input{display:none;}
+.dz-hint{font-size:11px;color:var(--ink-soft);}
+.attached-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-top:8px;}
+.attached-list li{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:5px;padding:6px 8px;font-size:12px;}
+.attached-list .fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.attached-list .fsize{color:var(--ink-soft);flex-shrink:0;font-size:11px;}
+.attached-list .fremove{border:none;background:none;color:var(--red);cursor:pointer;font-size:12px;padding:0 2px;flex-shrink:0;}
+.attached-list .fremove:hover{text-decoration:underline;}
+
+.btn{font-family:var(--sans);font-size:14px;font-weight:600;padding:11px 22px;border-radius:7px;border:1px solid transparent;cursor:pointer;}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-deep);}
+.btn-secondary{background:#fff;border-color:var(--line);color:var(--ink);}
+.btn-secondary:hover{border-color:var(--ink-soft);}
+.actions-bar{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
+
+.banner{padding:14px 18px;border-radius:8px;font-size:13.5px;margin-bottom:18px;display:none;}
+.banner.show{display:block;}
+.banner-error{background:var(--red-light);color:#6e221e;border:1px solid #e3b6b2;}
+
+.confirmation{text-align:center;padding:50px 20px;}
+.conf-icon{width:68px;height:68px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;}
+.confirmation h2{font-family:var(--serif);color:var(--navy-deep);margin-bottom:8px;}
+.confirmation p{color:var(--ink-soft);font-size:14px;max-width:440px;margin:0 auto 0;}
+.ref-code{display:inline-block;margin-top:18px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 18px;font-family:monospace;font-size:13px;}
+
+.footer-note{text-align:center;color:var(--ink-soft);font-size:12px;padding:0 20px 30px;}
+
+/* ── PASO 0: CONSULTA DE CUIT / AVISO DE MODIFICACIÓN ── */
+.link-back{display:inline-block;margin-top:12px;font-size:12px;color:var(--ink-soft);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:6px 12px;background:#fff;cursor:pointer;font-family:var(--sans);}
+.link-back:hover{border-color:var(--navy);color:var(--navy);}
+.update-banner{margin-top:14px;font-size:13px;padding:10px 14px;border-radius:8px;background:var(--info-light);color:var(--info);border:1px solid #b9d3e6;display:none;}
+.update-banner.show{display:block;}
+
+@media(max-width:680px){
+  .grid,.grid.g3,.docs-grid{grid-template-columns:1fr;}
+  .topbar{flex-direction:column;align-items:flex-start;}
+}
+
+/* ── SINCRONIZACIÓN SHAREPOINT (estado en confirmación) ── */
+.sync-status{margin-top:14px;font-size:13px;padding:8px 12px;border-radius:6px;display:none;}
+.sync-status.show{display:block;}
+.sync-pending{background:#fff8e1;color:#7a5c00;border:1px solid #ffe082;}
+.sync-ok{background:var(--green-light);color:var(--green);border:1px solid #b7d9ba;}
+.sync-warn{background:#fff3e0;color:#7a4800;border:1px solid #ffcc80;}
+
+/* ── PANTALLA DE ACCESO (GATE) ── */
+#gateScreen{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:var(--paper);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.gate-box{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:44px 38px;max-width:420px;width:100%;text-align:center;
+  box-shadow:0 6px 32px rgba(0,0,0,.10);
+}
+.gate-logo{font-size:44px;margin-bottom:8px;line-height:1;}
+.gate-brand{font-family:var(--serif);font-size:22px;color:var(--navy-deep);font-weight:700;margin-bottom:4px;}
+.gate-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:30px;letter-spacing:.2px;}
+.gate-label{font-size:12.5px;font-weight:600;color:var(--navy-deep);text-align:left;display:block;margin-bottom:7px;}
+.gate-input{
+  font-family:var(--sans);font-size:20px;letter-spacing:.18em;
+  padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;
+  width:100%;text-align:center;color:var(--ink);background:#fff;
+  margin-bottom:16px;transition:border-color .2s,background .2s;
+}
+.gate-input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-light);}
+.gate-input.gate-err-input{border-color:var(--red);background:var(--red-light);}
+.gate-btn{
+  font-family:var(--sans);font-size:14.5px;font-weight:600;
+  padding:13px 28px;border-radius:8px;border:none;
+  background:var(--navy);color:#fff;cursor:pointer;width:100%;
+  transition:background .2s;
+}
+.gate-btn:hover:not(:disabled){background:var(--navy-deep);}
+.gate-btn:disabled{opacity:.6;cursor:not-allowed;}
+.gate-error{
+  background:var(--red-light);color:#6e221e;border:1px solid #e3b6b2;
+  border-radius:7px;padding:10px 14px;font-size:12.5px;
+  margin-top:14px;display:none;
+}
+.gate-error.show{display:block;}
+.gate-loading{
+  display:none;align-items:center;justify-content:center;
+  gap:8px;color:var(--ink-soft);font-size:13px;margin-top:14px;
+}
+.gate-loading.show{display:flex;}
+.gate-spinner{
+  width:18px;height:18px;border:2.5px solid var(--teal-light);
+  border-top-color:var(--teal);border-radius:50%;
+  animation:spin .7s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.gate-attempts{font-size:11.5px;color:var(--ink-soft);margin-top:10px;min-height:16px;}
+.gate-admin-sep{height:1px;background:var(--line);margin:22px 0 16px;}
+.gate-admin-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--ink-soft);text-decoration:none;
+  border:1px solid var(--line);border-radius:6px;
+  padding:7px 14px;transition:all .18s;
+}
+.gate-admin-link:hover{color:var(--navy);border-color:var(--navy);background:rgba(31,58,82,.05);}
+</style>
+</head>
+<body>
+
+<!-- ─── PANTALLA DE ACCESO SEGURO ─── -->
+<div id="gateScreen">
+  <div class="gate-box">
+    <div class="gate-logo">🔐</div>
+    <div class="gate-brand">Grupo CPC</div>
+    <div class="gate-sub">Portal de Alta de Proveedores</div>
+    <label class="gate-label" for="gateCodeInput">Código de acceso</label>
+    <input
+      id="gateCodeInput"
+      class="gate-input"
+      type="password"
+      placeholder="Ingrese el código"
+      maxlength="30"
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <button class="gate-btn" id="gateBtn" onclick="validateGateCode()">Continuar →</button>
+    <div class="gate-error" id="gateError"></div>
+    <div class="gate-loading" id="gateLoading">
+      <div class="gate-spinner"></div>
+      <span>Validando código…</span>
+    </div>
+    <div class="gate-attempts" id="gateAttempts"></div>
+    <div class="gate-admin-sep"></div>
+    <a href="admin.html" class="gate-admin-link">🔒 Acceso administrativo</a>
+  </div>
+</div>
+
+<!-- ─── CONTENIDO PRINCIPAL (se muestra tras validación exitosa) ─── -->
+<div id="mainContent" style="display:none;">
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">Alta de Proveedores</span>
+    <span class="sub">Grupo CPC · Portal digital</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ─── PASO 0: CONSULTA DE CUIT ─── -->
+  <div id="cuitStage">
+    <div class="page-head">
+      <h1>Registro de proveedor</h1>
+      <p>Ingrese el CUIT de la empresa para comenzar. Si ya está registrada, precargaremos sus datos para que solo actualice lo necesario.</p>
+    </div>
+
+    <div class="banner banner-error" id="cuitError"></div>
+
+    <div class="card">
+      <p class="section-title"><span class="num">1</span>CUIT del proveedor</p>
+      <p class="section-desc">Se usa para verificar si la empresa ya está registrada.</p>
+      <div class="grid">
+        <div class="field" data-field="cuitCheck">
+          <label>CUIT<span class="req">*</span></label>
+          <input type="text" id="cuitCheckInput" placeholder="20-12345678-9" maxlength="13">
+          <span class="hint">Formato: XX-XXXXXXXX-X</span>
+        </div>
+      </div>
+      <div class="actions-bar">
+        <button type="button" class="btn btn-primary" id="cuitCheckBtn" onclick="checkCuitAndProceed()">Continuar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FORMULARIO ─── -->
+  <div id="formStage" style="display:none;">
+    <div class="page-head">
+      <h1 id="formTitle">Registro de proveedor</h1>
+      <p id="formSubtitle">Complete sus datos fiscales, bancarios y de contacto, y adjunte la documentación requerida. El equipo administrativo revisará su solicitud a la brevedad.</p>
+      <div class="update-banner" id="updateBanner"></div>
+      <button type="button" class="link-back" onclick="backToCuitStage()">← Cambiar CUIT</button>
+    </div>
+
+    <div class="banner banner-error" id="formError"></div>
+
+    <form id="providerForm" novalidate>
+
+      <!-- 1. Empresa -->
+      <div class="card">
+        <p class="section-title"><span class="num">1</span>Datos de la empresa</p>
+        <p class="section-desc">Información fiscal e identificatoria del proveedor.</p>
+        <div class="grid">
+          <div class="field full" data-field="razonSocial">
+            <label>Razón social<span class="req">*</span></label>
+            <input type="text" name="razonSocial" placeholder="Ej: Distribuidora del Sur S.A.">
+            <span class="err-msg">Ingrese la razón social (mínimo 3 caracteres).</span>
+          </div>
+          <div class="field" data-field="cuit">
+            <label>CUIT<span class="req">*</span></label>
+            <input type="text" name="cuit" placeholder="20-12345678-9" maxlength="13">
+            <span class="hint">Formato: XX-XXXXXXXX-X</span>
+            <span class="err-msg">CUIT inválido o ya registrado.</span>
+          </div>
+          <div class="field" data-field="condicionIva">
+            <label>Condición frente al IVA<span class="req">*</span></label>
+            <select name="condicionIva">
+              <option value="">Seleccionar…</option>
+              <option>Responsable Inscripto</option>
+              <option>Monotributista</option>
+              <option>Exento</option>
+              <option>Consumidor Final</option>
+            </select>
+            <span class="err-msg">Seleccione una opción.</span>
+          </div>
+          <div class="field" data-field="condicionIibb">
+            <label>Condición frente a Ingresos Brutos<span class="req">*</span></label>
+            <select name="condicionIibb">
+              <option value="">Seleccionar…</option>
+              <option>Convenio Multilateral</option>
+              <option>Contribuyente Local</option>
+              <option>Régimen Simplificado</option>
+              <option>Exento</option>
+            </select>
+            <span class="err-msg">Seleccione una opción.</span>
+          </div>
+          <div class="field full" data-field="domicilio">
+            <label>Domicilio fiscal<span class="req">*</span></label>
+            <input type="text" name="domicilio" placeholder="Calle, número, piso/depto.">
+            <span class="err-msg">Ingrese el domicilio fiscal.</span>
+          </div>
+          <div class="field" data-field="provincia">
+            <label>Provincia<span class="req">*</span></label>
+            <select name="provincia">
+              <option value="">Seleccionar…</option>
+              <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
+              <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
+              <option>Corrientes</option><option>Entre Ríos</option><option>Formosa</option>
+              <option>Jujuy</option><option>La Pampa</option><option>La Rioja</option>
+              <option>Mendoza</option><option>Misiones</option><option>Neuquén</option>
+              <option>Río Negro</option><option>Salta</option><option>San Juan</option>
+              <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
+              <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
+            </select>
+            <span class="err-msg">Seleccione una provincia.</span>
+          </div>
+          <div class="field" data-field="codigoPostal">
+            <label>Código postal<span class="req">*</span></label>
+            <input type="text" name="codigoPostal" placeholder="Ej: 1425">
+            <span class="err-msg">Ingrese el código postal.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Contacto -->
+      <div class="card">
+        <p class="section-title"><span class="num">2</span>Contacto</p>
+        <p class="section-desc">Datos de la persona y correo administrativo de referencia.</p>
+        <div class="grid">
+          <div class="field" data-field="emailAdmin">
+            <label>Correo electrónico administrativo<span class="req">*</span></label>
+            <input type="email" name="emailAdmin" placeholder="administracion@empresa.com">
+            <span class="err-msg">Ingrese un correo válido.</span>
+          </div>
+          <div class="field" data-field="personaContacto">
+            <label>Persona de contacto<span class="req">*</span></label>
+            <input type="text" name="personaContacto" placeholder="Nombre completo">
+            <span class="err-msg">Ingrese la persona de contacto.</span>
+          </div>
+          <div class="field" data-field="telefono">
+            <label>Teléfono<span class="req">*</span></label>
+            <input type="tel" name="telefono" placeholder="Ej: 11-5566-7788">
+            <span class="err-msg">Ingrese el teléfono de contacto.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Bancario -->
+      <div class="card">
+        <p class="section-title"><span class="num">3</span>Datos bancarios</p>
+        <p class="section-desc">Cuenta donde la empresa realizará los pagos.</p>
+        <div class="grid">
+          <div class="field" data-field="banco">
+            <label>Banco<span class="req">*</span></label>
+            <input type="text" name="banco" placeholder="Ej: Banco Galicia">
+            <span class="err-msg">Ingrese el banco.</span>
+          </div>
+          <div class="field" data-field="cbu">
+            <label>CBU<span class="req">*</span></label>
+            <input type="text" name="cbu" placeholder="22 dígitos" maxlength="22">
+            <span class="err-msg">El CBU debe tener exactamente 22 dígitos.</span>
+          </div>
+          <div class="field">
+            <label>Alias<span class="opt">(opcional)</span></label>
+            <input type="text" name="alias" placeholder="Ej: PAGOS.EMPRESA.SUR">
+          </div>
+          <div class="field" data-field="titular">
+            <label>Titular de la cuenta<span class="req">*</span></label>
+            <input type="text" name="titular" placeholder="Nombre del titular">
+            <span class="err-msg">Ingrese el titular de la cuenta.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Documentación -->
+      <div class="card">
+        <p class="section-title"><span class="num">4</span>Documentación</p>
+        <p class="section-desc">Adjunte cada constancia directamente. Formatos aceptados: PDF, JPG, PNG. Máx. 10 MB por archivo.</p>
+
+        <div class="docs-grid">
+          <div class="drop-zone" id="dz-arca" data-doc="arca">
+            <div class="dz-label">Constancia ARCA (ex AFIP)<span class="req" id="badge-arca"> *</span></div>
+            <div class="dz-inner">
+              <div class="dz-icon">📄</div>
+              <div class="dz-text">Arrastrá el archivo aquí o</div>
+              <label class="dz-browse">Elegir archivo<input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple data-doc="arca"></label>
+              <div class="dz-hint">PDF, JPG o PNG</div>
+            </div>
+            <ul class="attached-list" id="al-arca"></ul>
+          </div>
+
+          <div class="drop-zone" id="dz-cbu" data-doc="cbu">
+            <div class="dz-label">Certificado de CBU<span class="req" id="badge-cbu"> *</span></div>
+            <div class="dz-inner">
+              <div class="dz-icon">🏦</div>
+              <div class="dz-text">Arrastrá el archivo aquí o</div>
+              <label class="dz-browse">Elegir archivo<input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple data-doc="cbu"></label>
+              <div class="dz-hint">PDF, JPG o PNG</div>
+            </div>
+            <ul class="attached-list" id="al-cbu"></ul>
+          </div>
+
+          <div class="drop-zone" id="dz-iibb" data-doc="iibb">
+            <div class="dz-label">Constancia Ingresos Brutos<span class="req" id="badge-iibb"> *</span></div>
+            <div class="dz-inner">
+              <div class="dz-icon">📋</div>
+              <div class="dz-text">Arrastrá el archivo aquí o</div>
+              <label class="dz-browse">Elegir archivo<input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple data-doc="iibb"></label>
+              <div class="dz-hint">PDF, JPG o PNG</div>
+            </div>
+            <ul class="attached-list" id="al-iibb"></ul>
+          </div>
+
+          <div class="drop-zone" id="dz-certFiscal" data-doc="certFiscal">
+            <div class="dz-label">Certificado de No Retención / Exención<span class="opt"> (si corresponde)</span></div>
+            <div class="dz-inner">
+              <div class="dz-icon">📃</div>
+              <div class="dz-text">Arrastrá el archivo aquí o</div>
+              <label class="dz-browse">Elegir archivo<input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple data-doc="certFiscal"></label>
+              <div class="dz-hint">PDF, JPG o PNG</div>
+            </div>
+            <ul class="attached-list" id="al-certFiscal"></ul>
+          </div>
+
+          <div class="drop-zone" id="dz-docSocietaria" data-doc="docSocietaria" style="grid-column:1/-1;">
+            <div class="dz-label">Documentación societaria<span class="opt"> (estatuto, acta, poderes — si corresponde)</span></div>
+            <div class="dz-inner">
+              <div class="dz-icon">📂</div>
+              <div class="dz-text">Arrastrá los archivos aquí o</div>
+              <label class="dz-browse">Elegir archivos<input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple data-doc="docSocietaria"></label>
+              <div class="dz-hint">PDF, JPG o PNG · Podés subir varios archivos</div>
+            </div>
+            <ul class="attached-list" id="al-docSocietaria"></ul>
+          </div>
+        </div>
+        <span class="err-msg" id="docError" style="display:none;margin-top:10px;font-size:12.5px;"></span>
+      </div>
+
+      <!-- 5. Observaciones -->
+      <div class="card">
+        <p class="section-title"><span class="num">5</span>Observaciones</p>
+        <div class="field">
+          <textarea name="observaciones" placeholder="Aclaraciones adicionales (opcional)"></textarea>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">Limpiar formulario</button>
+        <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ─── CONFIRMACIÓN ─── -->
+  <div id="confirmStage" style="display:none;">
+    <div class="card confirmation">
+      <div class="conf-icon">✓</div>
+      <h2 id="confirmTitle">Solicitud enviada correctamente</h2>
+      <p id="confirmText">Sus datos y documentos fueron registrados. El equipo administrativo revisará la solicitud a la brevedad.</p>
+      <div class="ref-code" id="refNumber"></div>
+      <div id="sharepointStatus" class="sync-status sync-pending">
+        ⏳ Guardando archivos en SharePoint…
+      </div>
+      <div style="margin-top:24px;">
+        <button class="btn btn-secondary" onclick="resetForm()">Registrar otro proveedor</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer-note">Portal de Alta de Proveedores — Grupo CPC</p>
+
+</div><!-- /mainContent -->
+
+<script>
+/* ── URLS N8N ───────────────────────────────────────────────────
+   Reemplazar con las URLs reales de su instancia de n8n
+   (se obtienen al activar el workflow importado)
+   ──────────────────────────────────────────────────────────── */
+const N8N_WEBHOOK_URL = 'https://unionganadera.app.n8n.cloud/webhook/validar-codigo-proveedor';
+const N8N_SUBMIT_URL  = 'https://unionganadera.app.n8n.cloud/webhook/alta-proveedor';
+const N8N_CHECK_URL   = 'https://unionganadera.app.n8n.cloud/webhook/verificar-proveedor';
+
+const STORAGE_KEY = 'proveedores_cpc_v2';
+const REQUIRED_DOCS = ['arca','cbu','iibb'];
+const DOC_LABELS = { arca:'Constancia ARCA', cbu:'Certificado CBU', iibb:'Constancia IIBB', certFiscal:'Cert. Fiscal/Exención', docSocietaria:'Doc. Societaria' };
+let providers = [];
+let pendingUploads = {};
+
+function loadDB() {
+  try { providers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch(e) { providers = []; }
+}
+loadDB();
+
+/* ── FILES ── */
+function fileIcon(type) {
+  if (!type) return '📎';
+  if (type === 'application/pdf') return '📕';
+  if (type.startsWith('image/')) return '🖼️';
+  return '📎';
+}
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(0) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+function addFiles(docKey, files) {
+  if (!pendingUploads[docKey]) pendingUploads[docKey] = [];
+  for (const file of files) {
+    if (file.size > 10*1024*1024) { alert(`"${file.name}" supera los 10 MB.`); continue; }
+    pendingUploads[docKey].push({ name: file.name, size: file.size, type: file.type, file });
+  }
+  renderDZ(docKey);
+}
+function removeFile(docKey, idx) {
+  pendingUploads[docKey].splice(idx, 1);
+  renderDZ(docKey);
+}
+function renderDZ(docKey) {
+  const dz = document.getElementById('dz-' + docKey);
+  const al = document.getElementById('al-' + docKey);
+  const files = pendingUploads[docKey] || [];
+  dz.classList.toggle('has-files', files.length > 0);
+  dz.classList.remove('required-empty');
+  al.innerHTML = files.map((f, i) => `
+    <li>
+      <span>${fileIcon(f.type)}</span>
+      <span class="fname" title="${esc(f.name)}">${esc(f.name)}</span>
+      <span class="fsize">${fmtSize(f.size)}</span>
+      <button type="button" class="fremove" onclick="removeFile('${docKey}',${i})">Quitar</button>
+    </li>`).join('');
+}
+
+document.querySelectorAll('.dz-browse input[type=file]').forEach(input => {
+  input.addEventListener('change', function() {
+    const k = this.getAttribute('data-doc');
+    if (k && this.files.length) addFiles(k, Array.from(this.files));
+    this.value = '';
+  });
+});
+document.querySelectorAll('.drop-zone').forEach(dz => {
+  const k = dz.getAttribute('data-doc');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files).filter(f => /\.(pdf|jpg|jpeg|png)$/i.test(f.name));
+    if (files.length) addFiles(k, files);
+    else alert('Solo se aceptan PDF, JPG o PNG.');
+  });
+});
+
+/* ── MASKS ── */
+function digitsOnly(v) { return (v||'').replace(/\D/g,''); }
+function formatCuit(v) {
+  const d = digitsOnly(v).slice(0,11);
+  let o = d;
+  if (d.length > 2) o = d.slice(0,2) + '-' + d.slice(2);
+  if (d.length > 10) o = d.slice(0,2) + '-' + d.slice(2,10) + '-' + d.slice(10);
+  return o;
+}
+document.querySelector('input[name=cuit]').addEventListener('input', e => {
+  e.target.value = formatCuit(e.target.value);
+});
+document.getElementById('cuitCheckInput').addEventListener('input', e => {
+  e.target.value = formatCuit(e.target.value);
+});
+document.getElementById('cuitCheckInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkCuitAndProceed();
+});
+document.querySelector('input[name=cbu]').addEventListener('input', e => {
+  e.target.value = digitsOnly(e.target.value).slice(0,22);
+});
+
+/* ── PASO 0: VERIFICACIÓN DE CUIT (alta vs. modificación) ── */
+let isUpdate = false;
+let existingProvider = null;
+
+function setDocsOptional(optional) {
+  ['arca','cbu','iibb'].forEach(k => {
+    const el = document.getElementById('badge-' + k);
+    if (!el) return;
+    if (optional) {
+      el.className = 'opt';
+      el.textContent = ' (opcional — solo si desea reemplazarlo)';
+    } else {
+      el.className = 'req';
+      el.textContent = ' *';
+    }
+  });
+}
+
+function prefillForm(p) {
+  const campos = ['razonSocial','cuit','condicionIva','condicionIibb','domicilio','provincia',
+    'codigoPostal','emailAdmin','personaContacto','telefono','banco','cbu','alias','titular','observaciones'];
+  const form = document.getElementById('providerForm');
+  campos.forEach(name => {
+    const el = form.querySelector(`[name="${name}"]`);
+    if (el && p[name] !== undefined) el.value = p[name];
+  });
+}
+
+async function checkCuitAndProceed() {
+  const input = document.getElementById('cuitCheckInput');
+  const btn   = document.getElementById('cuitCheckBtn');
+  const errEl = document.getElementById('cuitError');
+  errEl.classList.remove('show');
+
+  const cuit = input.value.trim();
+  if (digitsOnly(cuit).length !== 11) {
+    errEl.textContent = 'Ingrese un CUIT válido (11 dígitos).';
+    errEl.classList.add('show');
+    input.focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando…';
+  isUpdate = false;
+  existingProvider = null;
+
+  try {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 10000);
+    const resp = await fetch(N8N_CHECK_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ cuit }),
+      signal:  controller.signal
+    });
+    clearTimeout(t);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.existe && data.proveedor) {
+        isUpdate = true;
+        existingProvider = data.proveedor;
+      }
+    }
+  } catch (err) {
+    console.warn('[verificar proveedor]', err);
+    // Si falla la verificación se continúa como alta normal; el backend
+    // igual controla duplicados como resguardo.
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Continuar →';
+
+  // Limpiar formulario y adjuntos antes de mostrar la pantalla correspondiente
+  document.getElementById('providerForm').reset();
+  pendingUploads = {};
+  document.querySelectorAll('.drop-zone').forEach(dz => {
+    dz.classList.remove('has-files','required-empty');
+    document.getElementById('al-' + dz.getAttribute('data-doc')).innerHTML = '';
+  });
+
+  const banner = document.getElementById('updateBanner');
+  if (isUpdate) {
+    prefillForm(existingProvider);
+    setDocsOptional(true);
+    document.getElementById('formTitle').textContent = 'Modificación de datos de proveedor';
+    document.getElementById('formSubtitle').textContent = 'Ya existe un registro con este CUIT. Sus datos fueron precargados: modifique lo que necesite. No es obligatorio volver a adjuntar documentación ya entregada, solo si desea reemplazarla.';
+    banner.classList.add('show');
+    banner.textContent = 'ℹ️ Proveedor existente: ' + (existingProvider.razonSocial || '(sin dato)') + ' — Estado actual: ' + (existingProvider.estado || 'sin dato');
+  } else {
+    document.querySelector('input[name=cuit]').value = formatCuit(cuit);
+    setDocsOptional(false);
+    document.getElementById('formTitle').textContent = 'Registro de proveedor';
+    document.getElementById('formSubtitle').textContent = 'Complete sus datos fiscales, bancarios y de contacto, y adjunte la documentación requerida. El equipo administrativo revisará su solicitud a la brevedad.';
+    banner.classList.remove('show');
+    banner.textContent = '';
+  }
+
+  document.getElementById('cuitStage').style.display = 'none';
+  document.getElementById('formStage').style.display  = 'block';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function backToCuitStage() {
+  document.getElementById('formStage').style.display = 'none';
+  document.getElementById('cuitStage').style.display  = 'block';
+  document.getElementById('cuitCheckInput').focus();
+}
+
+/* ── VALIDATION ── */
+function setErr(f, has) { document.querySelector(`[data-field="${f}"]`)?.classList.toggle('invalid', has); }
+function validate(formEl) {
+  const fd = new FormData(formEl);
+  const g  = n => (fd.get(n)||'').toString().trim();
+  let ok = true;
+  ['razonSocial','cuit','condicionIva','condicionIibb','domicilio','provincia',
+   'codigoPostal','emailAdmin','personaContacto','telefono','banco','cbu','titular'].forEach(n => setErr(n, false));
+
+  if (g('razonSocial').length < 3) { setErr('razonSocial', true); ok = false; }
+  const cn = digitsOnly(g('cuit'));
+  if (cn.length !== 11) { setErr('cuit', true); ok = false; }
+  // Nota: ya no se bloquea aquí por CUIT duplicado local. La verificación
+  // real contra el registro (SharePoint/Excel) se hace al enviar, vía
+  // N8N_CHECK_URL, y si ya existe se le pregunta al usuario si desea
+  // actualizar sus datos y documentación.
+  if (!g('condicionIva'))   { setErr('condicionIva', true);   ok = false; }
+  if (!g('condicionIibb'))  { setErr('condicionIibb', true);  ok = false; }
+  if (!g('domicilio'))      { setErr('domicilio', true);      ok = false; }
+  if (!g('provincia'))      { setErr('provincia', true);      ok = false; }
+  if (!g('codigoPostal'))   { setErr('codigoPostal', true);   ok = false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g('emailAdmin'))) { setErr('emailAdmin', true); ok = false; }
+  if (!g('personaContacto')) { setErr('personaContacto', true); ok = false; }
+  if (!g('telefono'))       { setErr('telefono', true);       ok = false; }
+  if (!g('banco'))          { setErr('banco', true);          ok = false; }
+  if (g('cbu').length !== 22) { setErr('cbu', true);          ok = false; }
+  if (!g('titular'))        { setErr('titular', true);        ok = false; }
+
+  const docErrEl = document.getElementById('docError');
+  const docsRequeridos = isUpdate ? [] : REQUIRED_DOCS;
+  const missing  = docsRequeridos.filter(d => !(pendingUploads[d]||[]).length);
+  if (missing.length) {
+    docErrEl.textContent = 'Falta adjuntar: ' + missing.map(d => DOC_LABELS[d]).join(', ') + '.';
+    docErrEl.style.display = 'block';
+    missing.forEach(d => document.getElementById('dz-' + d).classList.add('required-empty'));
+    ok = false;
+  } else { docErrEl.style.display = 'none'; }
+
+  return { ok, fd };
+}
+
+/* ── HELPERS ── */
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload  = () => res((reader.result || '').split(',')[1] || '');
+    reader.onerror = () => rej(new Error('No se pudo leer el archivo: ' + file.name));
+    reader.readAsDataURL(file);
+  });
+}
+
+function setSyncStatus(clase, texto) {
+  const el = document.getElementById('sharepointStatus');
+  el.className = 'sync-status show ' + clase;
+  el.textContent = texto;
+}
+
+/* ── SUBMIT ── */
+document.getElementById('providerForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const { ok, fd } = validate(this);
+  const errBanner = document.getElementById('formError');
+  if (!ok) {
+    errBanner.textContent = 'Revise los campos marcados en rojo antes de continuar.';
+    errBanner.classList.add('show');
+    (document.querySelector('.field.invalid') || document.querySelector('.drop-zone.required-empty'))
+      ?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+  errBanner.classList.remove('show');
+
+  // Deshabilitar botón mientras se procesa
+  const submitBtn = this.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Verificando…';
+
+  const g  = n => (fd.get(n)||'').toString().trim();
+
+  // El CUIT ya fue verificado contra SharePoint/Excel en el paso 0
+  // (pantalla de ingreso de CUIT). Se reutiliza ese resultado acá.
+  const confirmarActualizacion = isUpdate;
+  const idExistente = existingProvider ? (existingProvider.id || null) : null;
+
+  submitBtn.textContent = 'Enviando…';
+
+  const id = (confirmarActualizacion && idExistente) ? idExistente : ('PROV-' + Date.now().toString().slice(-8));
+
+  const record = {
+    id, razonSocial: g('razonSocial'), cuit: g('cuit'),
+    condicionIva: g('condicionIva'), condicionIibb: g('condicionIibb'),
+    domicilio: g('domicilio'), provincia: g('provincia'), codigoPostal: g('codigoPostal'),
+    emailAdmin: g('emailAdmin'), personaContacto: g('personaContacto'), telefono: g('telefono'),
+    banco: g('banco'), cbu: g('cbu'), alias: g('alias'), titular: g('titular'),
+    observaciones: g('observaciones'),
+    docNames: Object.fromEntries(
+      Object.entries(pendingUploads).map(([k, files]) => [k, files.map(f => f.name)])
+    ),
+    fechaRegistro: new Date().toISOString(),
+    estado: 'Pendiente',
+    confirmarActualizacion
+  };
+
+  // ── 1. Guardar localmente (localStorage + IndexedDB) para el panel admin ──
+  const idxLocal = providers.findIndex(p => p.id === record.id);
+  if (idxLocal >= 0) providers[idxLocal] = record; else providers.push(record);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(providers));
+  await saveFilesToIDB(record.id, pendingUploads);
+
+  // ── 2. Mostrar confirmación de inmediato ──
+  document.getElementById('refNumber').textContent = 'N.º de solicitud: ' + id;
+  const confTitle = document.getElementById('confirmTitle');
+  const confText  = document.getElementById('confirmText');
+  if (confirmarActualizacion) {
+    confTitle.textContent = 'Modificación enviada correctamente';
+    confText.textContent  = 'Los datos actualizados fueron registrados. El equipo administrativo fue notificado de los cambios realizados.';
+  } else {
+    confTitle.textContent = 'Solicitud enviada correctamente';
+    confText.textContent  = 'Sus datos y documentos fueron registrados. El equipo administrativo revisará la solicitud a la brevedad.';
+  }
+  document.getElementById('formStage').style.display    = 'none';
+  document.getElementById('confirmStage').style.display = 'block';
+  setSyncStatus('sync-pending', '⏳ Guardando archivos en SharePoint…');
+  window.scrollTo({ top:0, behavior:'smooth' });
+
+  submitBtn.disabled    = false;
+  submitBtn.textContent = 'Enviar solicitud';
+
+  // ── 3. Enviar a n8n en background (SharePoint + Excel) ──
+  try {
+    // Convertir archivos a base64
+    const archivos = {};
+    for (const [docKey, files] of Object.entries(pendingUploads)) {
+      archivos[docKey] = [];
+      for (const f of files) {
+        const contenido = await fileToBase64(f.file);
+        archivos[docKey].push({
+          nombre:   f.name,
+          tipo:     f.type || 'application/octet-stream',
+          contenido // base64 sin prefijo data:...
+        });
+      }
+    }
+
+    const payload = { ...record, archivos };
+    delete payload.docNames; // ya incluido en archivos
+
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 120000); // 2 min (archivos grandes)
+
+    const resp = await fetch(N8N_SUBMIT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+      signal:  controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (resp.ok) {
+      const respData = await resp.json().catch(() => ({}));
+      if (respData.requiereConfirmacion) {
+        setSyncStatus('sync-warn', '⚠️ Ya existía un proveedor con este CUIT y no se pudo confirmar la actualización a tiempo. Vuelva a enviar el formulario o contacte al administrador.');
+      } else if (respData.actualizado) {
+        setSyncStatus('sync-ok', '✅ Datos y documentación del proveedor actualizados correctamente en SharePoint.');
+      } else {
+        setSyncStatus('sync-ok', '✅ Archivos y datos guardados en SharePoint correctamente.');
+      }
+    } else {
+      setSyncStatus('sync-warn', '⚠️ Los datos quedaron guardados localmente, pero ocurrió un error al sincronizar con SharePoint (HTTP ' + resp.status + '). Avise al administrador.');
+    }
+  } catch(err) {
+    const msg = err.name === 'AbortError'
+      ? '⏱️ El envío a SharePoint tardó demasiado. Los datos están guardados localmente.'
+      : (err instanceof TypeError)
+        ? '⚠️ Sin conexión a n8n. Los datos quedaron guardados localmente. El administrador deberá sincronizarlos manualmente.'
+        : '⚠️ Error al sincronizar con SharePoint. Los datos están guardados localmente.';
+    setSyncStatus('sync-warn', msg);
+    console.warn('[n8n sync]', err);
+  }
+});
+
+
+/* ── RESET ── */
+function resetForm() {
+  document.getElementById('providerForm').reset();
+  pendingUploads = {};
+  isUpdate = false;
+  existingProvider = null;
+  setDocsOptional(false);
+  document.getElementById('updateBanner').classList.remove('show');
+  document.querySelectorAll('.drop-zone').forEach(dz => {
+    dz.classList.remove('has-files','required-empty');
+    document.getElementById('al-' + dz.getAttribute('data-doc')).innerHTML = '';
+  });
+  document.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
+  document.getElementById('formError').classList.remove('show');
+  document.getElementById('docError').style.display = 'none';
+  document.getElementById('confirmStage').style.display = 'none';
+  document.getElementById('formStage').style.display    = 'none';
+  document.getElementById('cuitStage').style.display    = 'block';
+  document.getElementById('cuitCheckInput').value = '';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function esc(str) { const d = document.createElement('div'); d.textContent = str||''; return d.innerHTML; }
+
+/* ── INDEXEDDB (compartido con Panel_Administracion.html) ── */
+const FILES_DB_NAME = 'cpc_proveedores_files_v1';
+const FILES_DB_VER  = 1;
+const FILES_STORE   = 'files';
+
+function openFilesDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(FILES_DB_NAME, FILES_DB_VER);
+    r.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(FILES_STORE)) {
+        const st = db.createObjectStore(FILES_STORE, { keyPath: 'key' });
+        st.createIndex('by_provider', 'providerId', { unique: false });
+      }
+    };
+    r.onsuccess = e => res(e.target.result);
+    r.onerror   = e => rej(e.target.error);
+  });
+}
+
+async function saveFilesToIDB(providerId, uploads) {
+  try {
+    const db = await openFilesDB();
+    const tx = db.transaction(FILES_STORE, 'readwrite');
+    const st = tx.objectStore(FILES_STORE);
+    for (const [docKey, files] of Object.entries(uploads)) {
+      for (const f of files) {
+        st.put({
+          key: `${providerId}||${docKey}||${f.name}`,
+          providerId, docKey,
+          filename: f.name, type: f.type,
+          blob: f.file   // File/Blob se guarda nativamente en IDB
+        });
+      }
+    }
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+  } catch(e) {
+    console.warn('IDB save error:', e);
+  }
+}
+
+/* ──────────────────────────────────────────────
+   VALIDACIÓN DE ACCESO VÍA N8N
+   (URLs configuradas al inicio del script)
+   ────────────────────────────────────────────── */
+const MAX_GATE_ATTEMPTS = 5;
+let gateAttempts = 0;
+
+async function validateGateCode() {
+  const codeInput    = document.getElementById('gateCodeInput');
+  const gateBtn      = document.getElementById('gateBtn');
+  const gateErr      = document.getElementById('gateError');
+  const gateLoad     = document.getElementById('gateLoading');
+  const gateAttemptEl = document.getElementById('gateAttempts');
+
+  const code = codeInput.value.trim();
+
+  // Validaciones previas al fetch
+  if (!code) {
+    _showGateError('Ingrese el código de acceso.');
+    codeInput.focus();
+    return;
+  }
+  if (gateAttempts >= MAX_GATE_ATTEMPTS) {
+    _showGateError('Superó el número máximo de intentos. Solicite un nuevo código al equipo de Grupo CPC.');
+    gateBtn.disabled = true;
+    return;
+  }
+
+  // Estado de carga
+  gateErr.classList.remove('show');
+  codeInput.classList.remove('gate-err-input');
+  gateLoad.classList.add('show');
+  gateBtn.disabled = true;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 12000); // 12 s
+
+    const resp = await fetch(N8N_WEBHOOK_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ codigo: code }),
+      signal:  controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!resp.ok) throw new Error('servidor_' + resp.status);
+
+    const data = await resp.json();
+
+    if (data.valido === true) {
+      /* ✅ Acceso concedido */
+      document.getElementById('gateScreen').style.display  = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      return; // no ejecutar resto
+    }
+
+    /* ❌ Código incorrecto */
+    gateAttempts++;
+    codeInput.classList.add('gate-err-input');
+    codeInput.select();
+    const restantes = MAX_GATE_ATTEMPTS - gateAttempts;
+    if (restantes <= 0) {
+      _showGateError('Código incorrecto. No quedan más intentos disponibles.');
+      gateBtn.disabled = true;
+      gateAttemptEl.textContent = '';
+    } else {
+      _showGateError('Código incorrecto. Verifique e intente nuevamente.');
+      gateAttemptEl.textContent = `Intentos restantes: ${restantes} de ${MAX_GATE_ATTEMPTS}`;
+      gateBtn.disabled = false;
+    }
+
+  } catch(err) {
+    gateAttempts++;
+    if (err.name === 'AbortError') {
+      _showGateError('Tiempo de espera agotado. Verifique su conexión a internet e intente de nuevo.');
+    } else if (err instanceof TypeError) {
+      _showGateError('No se pudo conectar al servidor de validación. Verifique su conexión a internet.');
+    } else if (err.message && err.message.startsWith('servidor_')) {
+      _showGateError('Error en el servidor de validación (' + err.message.replace('servidor_','HTTP ') + '). Intente más tarde.');
+    } else {
+      _showGateError('Error inesperado al validar el código. Intente nuevamente.');
+    }
+    gateBtn.disabled = false;
+
+  } finally {
+    gateLoad.classList.remove('show');
+  }
+}
+
+function _showGateError(msg) {
+  const el = document.getElementById('gateError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// Validar con la tecla Enter
+document.getElementById('gateCodeInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') validateGateCode();
+});
+</script>
+</body>
+</html>

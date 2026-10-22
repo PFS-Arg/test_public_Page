@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Administrativo — Proveedores CPC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root {
+  --navy:#1F3A52; --navy-deep:#142a3d; --teal:#1d7a6b; --teal-light:#e3f0ee;
+  --paper:#f6f4ee; --card:#ffffff; --ink:#23282b; --ink-soft:#5b6368;
+  --line:#dcd8cc; --amber:#b5781a; --amber-light:#fbf0db;
+  --red:#a3342f; --red-light:#fbe9e7; --green:#3b7a3f; --green-light:#e9f3e8;
+  --info:#1d5a8f; --info-light:#e6eff7;
+  --r:10px;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --serif:'Georgia','Times New Roman',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;min-height:100vh;}
+
+.topbar{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--teal);flex-wrap:wrap;gap:12px;}
+.brand{display:flex;align-items:baseline;gap:10px;}
+.brand .mark{font-family:var(--serif);font-size:22px;font-weight:700;}
+.brand .sub{font-size:11px;color:#c9d6dd;letter-spacing:.5px;text-transform:uppercase;}
+.topbar-link{font-size:12.5px;color:#c9d6dd;text-decoration:none;border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:6px;}
+.topbar-link:hover{background:rgba(255,255,255,.1);color:#fff;}
+.topbar-badge{background:var(--teal);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;margin-left:6px;letter-spacing:.3px;}
+
+.container{max-width:1280px;margin:0 auto;padding:32px 20px 80px;}
+.page-head{margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:18px;}
+.page-head h1{font-family:var(--serif);font-size:27px;color:var(--navy-deep);margin-bottom:6px;}
+.page-head p{color:var(--ink-soft);font-size:14px;}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px 28px;margin-bottom:22px;}
+
+/* ── LOGIN ── */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;}
+.login-box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:36px 40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.login-box h2{font-family:var(--serif);text-align:center;color:var(--navy-deep);margin-bottom:6px;}
+.login-box .sub{text-align:center;color:var(--ink-soft);font-size:13px;margin-bottom:26px;}
+.login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.login-field label{font-size:12.5px;font-weight:600;color:var(--navy-deep);}
+.login-field input{font-family:var(--sans);font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);width:100%;}
+.login-field input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-light);}
+.login-lock{font-size:44px;text-align:center;display:block;margin-bottom:18px;}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px;}
+.stat-card .snum{font-size:26px;font-weight:700;color:var(--navy-deep);font-family:var(--serif);}
+.stat-card .slbl{font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.stat-card.s-pendiente .snum{color:var(--amber);}
+.stat-card.s-aprobado  .snum{color:var(--green);}
+.stat-card.s-rechazado .snum{color:var(--red);}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.toolbar-left{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.toolbar-right{display:flex;gap:8px;flex-wrap:wrap;}
+.search-box{font-size:13px;padding:7px 11px;border:1px solid var(--line);border-radius:6px;background:#fff;min-width:220px;}
+.search-box:focus{outline:none;border-color:var(--teal);}
+.filter-select{font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;cursor:pointer;}
+
+/* ── BUTTONS ── */
+.btn{font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;border-radius:7px;border:1px solid transparent;cursor:pointer;transition:all .15s;}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-deep);}
+.btn-secondary{background:#fff;border-color:var(--line);color:var(--ink);}
+.btn-secondary:hover{border-color:var(--ink-soft);}
+.btn-danger{background:#fff;border-color:var(--red);color:var(--red);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#2e6132;}
+.btn-sm{font-size:12.5px;padding:7px 14px;border-radius:6px;}
+.btn-xs{font-size:11.5px;padding:4px 10px;border-radius:5px;}
+.btn-icon{font-size:13px;padding:7px 13px;border-radius:6px;}
+.import-label{display:inline-block;cursor:pointer;}
+.import-label input{display:none;}
+
+/* ── BANNERS ── */
+.banner{padding:14px 18px;border-radius:8px;font-size:13.5px;margin-bottom:16px;}
+.banner-error{background:var(--red-light);color:#6e221e;border:1px solid #e3b6b2;}
+.banner-info{background:var(--info-light);color:#163f63;border:1px solid #b8d0e6;font-size:13px;}
+.banner-amber{background:var(--amber-light);color:#7a4e0c;border:1px solid #dfc18a;}
+.banner-success{background:var(--green-light);color:#234d26;border:1px solid #bcd8bb;}
+
+/* ── EXCEL TABLE ── */
+.excel-wrap{border:1px solid var(--line);border-radius:var(--r);background:#fff;overflow:hidden;}
+.excel-scroll{overflow-x:auto;overflow-y:auto;max-height:560px;}
+table.xls{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap;}
+table.xls thead th{
+  background:#e8e4d8;border-right:1px solid #d0cabb;border-bottom:2px solid #b8b0a0;
+  padding:9px 12px;text-align:left;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft);
+  position:sticky;top:0;z-index:3;cursor:pointer;user-select:none;
+}
+table.xls thead th:hover{background:#ddd8ca;}
+table.xls thead th.sort-asc::after{content:' ▲';font-size:9px;}
+table.xls thead th.sort-desc::after{content:' ▼';font-size:9px;}
+table.xls thead th:first-child{min-width:34px;text-align:center;}
+table.xls thead th:nth-child(2){position:sticky;left:34px;z-index:4;background:#e8e4d8;}
+table.xls tbody td{padding:9px 12px;border-right:1px solid #eee;border-bottom:1px solid #eee;vertical-align:middle;}
+table.xls tbody tr:nth-child(even) td{background:#faf9f5;}
+table.xls tbody tr:hover td{background:#eef5f0 !important;}
+table.xls tbody td:nth-child(2){position:sticky;left:34px;z-index:1;background:#fff;font-weight:600;}
+table.xls tbody tr:nth-child(even) td:nth-child(2){background:#faf9f5;}
+table.xls tbody tr:hover td:nth-child(2){background:#eef5f0 !important;}
+.xls-num{text-align:center;color:var(--ink-soft);font-size:11px;background:#f0ede5 !important;border-right:1px solid var(--line) !important;min-width:34px;font-weight:600;}
+.row-header{display:flex;flex-direction:column;gap:1px;}
+.row-email{font-size:11px;color:var(--ink-soft);font-weight:400;}
+.excel-footer{background:#f0ede5;border-top:1px solid var(--line);padding:7px 14px;display:flex;align-items:center;gap:12px;}
+.sheet-tab{background:#fff;border:1px solid var(--line);border-bottom:none;border-radius:4px 4px 0 0;padding:5px 14px;font-size:12px;color:var(--navy-deep);font-weight:600;}
+.row-count{font-size:11.5px;color:var(--ink-soft);margin-left:auto;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.badge-pendiente{background:var(--amber-light);color:var(--amber);}
+.badge-aprobado{background:var(--green-light);color:var(--green);}
+.badge-rechazado{background:var(--red-light);color:var(--red);}
+.doc-chip{display:inline-flex;align-items:center;gap:3px;background:#f0ede5;border:1px solid var(--line);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--navy-deep);cursor:pointer;text-decoration:none;margin:1px;}
+.doc-chip:hover{background:var(--teal-light);border-color:var(--teal);}
+.doc-chip.missing{opacity:.35;cursor:default;}
+.doc-chip.missing:hover{background:#f0ede5;border-color:var(--line);}
+.row-actions{display:flex;gap:4px;}
+
+/* ── SHAREPOINT CHIP ── */
+.doc-chip.sp-chip{background:#e6eff7;border-color:#b8d0e6;color:var(--info);text-decoration:none;}
+.doc-chip.sp-chip:hover{background:#cce0f0;border-color:var(--info);}
+.sp-source-banner{font-size:13px;padding:10px 16px;border-radius:7px;margin-bottom:16px;display:none;}
+.sp-source-banner.show{display:flex;align-items:center;gap:10px;}
+.sp-source-loading{background:var(--info-light);color:#163f63;border:1px solid #b8d0e6;}
+.sp-source-ok{background:var(--green-light);color:#234d26;border:1px solid #bcd8bb;}
+.sp-source-warn{background:var(--amber-light);color:#7a4e0c;border:1px solid #dfc18a;}
+.sp-source-error{background:var(--red-light);color:#6e221e;border:1px solid #e3b6b2;}
+.sp-spinner{width:15px;height:15px;border:2px solid rgba(0,0,0,.12);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:70px 20px;color:var(--ink-soft);}
+.empty-state .eicon{font-size:40px;display:block;margin-bottom:14px;}
+.empty-state p{font-size:14px;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,30,40,.55);align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#fff;border-radius:10px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;padding:28px 30px;}
+.modal-box h3{font-family:var(--serif);color:var(--navy-deep);margin-bottom:6px;}
+.dl-grid{display:grid;grid-template-columns:160px 1fr;gap:7px 14px;font-size:13.5px;margin:16px 0;}
+.dl-grid dt{color:var(--ink-soft);font-weight:600;}
+.dl-grid dd{margin:0;word-break:break-word;}
+.modal-doc-title{font-size:12.5px;font-weight:700;color:var(--navy-deep);margin:16px 0 6px;}
+.doc-file-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;margin-bottom:6px;}
+.doc-file-name{display:flex;align-items:center;gap:7px;}
+.actions-bar{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap;}
+
+/* ── FILE PREVIEW ── */
+.fpm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);align-items:center;justify-content:center;z-index:100;}
+.fpm.show{display:flex;}
+.fpm-inner{background:#fff;border-radius:10px;max-width:92vw;max-height:92vh;overflow:auto;display:flex;flex-direction:column;}
+.fpm-bar{background:var(--navy);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:10px 10px 0 0;gap:14px;}
+.fpm-bar .fname{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fpm-close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;}
+.fpm-content img{display:block;max-width:100%;height:auto;}
+.fpm-content iframe{width:80vw;height:76vh;border:none;display:block;}
+
+.footer-note{text-align:center;color:var(--ink-soft);font-size:12px;padding:0 20px 30px;}
+
+@media(max-width:760px){
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .topbar{flex-direction:column;align-items:flex-start;}
+  .toolbar{flex-direction:column;align-items:flex-start;}
+  .modal-box{padding:18px 14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">Panel Administrativo</span>
+    <span class="sub">Grupo CPC · Proveedores</span>
+    <span class="topbar-badge">Admin</span>
+  </div>
+  <a class="topbar-link" href="Formulario_Proveedores.html">← Ir al formulario</a>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginWrap" class="login-wrap">
+  <div class="login-box">
+    <span class="login-lock">🔐</span>
+    <h2>Acceso administrativo</h2>
+    <p class="sub">Ingrese sus credenciales para continuar</p>
+    <div class="banner banner-error" id="loginError" style="display:none;margin-bottom:16px;"></div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter')tryLogin()">
+    </div>
+    <div class="login-field" style="margin-bottom:22px;">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')tryLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;font-size:15px;padding:12px;" onclick="tryLogin()">Ingresar</button>
+    <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">Demo: usuario <code>admin</code> / contraseña <code>admin123</code></p>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="dashboard" style="display:none;">
+<div class="container">
+
+  <div class="page-head">
+    <h1>Registro de proveedores</h1>
+    <p>Consulte, apruebe o rechace solicitudes. Importá los ZIPs enviados por proveedores para acceder a sus constancias.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="snum" id="statTotal">0</div>
+      <div class="slbl">Total</div>
+    </div>
+    <div class="stat-card s-pendiente">
+      <div class="snum" id="statPendiente">0</div>
+      <div class="slbl">Pendientes</div>
+    </div>
+    <div class="stat-card s-aprobado">
+      <div class="snum" id="statAprobado">0</div>
+      <div class="slbl">Aprobados</div>
+    </div>
+    <div class="stat-card s-rechazado">
+      <div class="snum" id="statRechazado">0</div>
+      <div class="slbl">Rechazados</div>
+    </div>
+  </div>
+
+  <!-- FUENTE DE DATOS SHAREPOINT -->
+  <div class="sp-source-banner sp-source-loading show" id="dataSourceBanner">
+    <span class="sp-spinner"></span>
+    <span>Conectando con SharePoint…</span>
+  </div>
+
+  <!-- INFO BANNER -->
+  <div class="banner banner-info" style="margin-bottom:18px;">
+    <strong>📊 Fuente de datos:</strong> Los proveedores se cargan desde el Excel de SharePoint vía n8n.<br>
+    El chip <strong>📁 SP</strong> en la columna Constancias abre la carpeta del proveedor directamente en SharePoint.<br>
+    Si n8n no está disponible, se muestran los datos guardados localmente en este navegador.
+  </div>
+
+  <!-- IMPORT BANNER -->
+  <div class="banner banner-amber" id="importBanner" style="display:none;"></div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar razón social o CUIT…" oninput="renderTable()">
+      <select class="filter-select" id="statusFilter" onchange="renderTable()">
+        <option value="todos">Todos los estados</option>
+        <option value="Pendiente">Pendientes</option>
+        <option value="Aprobado">Aprobados</option>
+        <option value="Rechazado">Rechazados</option>
+      </select>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-secondary btn-sm" onclick="refreshFromSharePoint()">🔄 Actualizar desde SharePoint</button>
+      <button class="btn btn-secondary btn-sm" onclick="seedDemo()">Datos de ejemplo</button>
+      <label class="btn btn-secondary btn-sm import-label" title="Importar ZIP enviado por el proveedor">
+        📦 Importar ZIP
+        <input type="file" accept=".zip" onchange="importZip(this)">
+      </label>
+      <button class="btn btn-secondary btn-sm" onclick="copyTSV()">Copiar para Excel</button>
+      <button class="btn btn-success btn-sm" onclick="exportExcel()">⬇ Exportar Excel</button>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- TABLA EXCEL -->
+  <div class="excel-wrap" id="excelWrap">
+    <div class="excel-scroll">
+      <table class="xls" id="xlsTable">
+        <thead>
+          <tr>
+            <th class="xls-num">#</th>
+            <th onclick="sortBy('razonSocial')">Razón Social / Email</th>
+            <th onclick="sortBy('cuit')">CUIT</th>
+            <th onclick="sortBy('condicionIva')">Cond. IVA</th>
+            <th onclick="sortBy('condicionIibb')">Cond. IIBB</th>
+            <th onclick="sortBy('provincia')">Provincia</th>
+            <th onclick="sortBy('banco')">Banco</th>
+            <th>CBU</th>
+            <th>Alias</th>
+            <th onclick="sortBy('titular')">Titular</th>
+            <th>Teléfono</th>
+            <th>Constancias</th>
+            <th onclick="sortBy('fechaRegistro')">Fecha</th>
+            <th onclick="sortBy('estado')">Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="xlsBody"></tbody>
+      </table>
+    </div>
+    <div class="excel-footer">
+      <span class="sheet-tab">📋 Proveedores</span>
+      <span class="row-count" id="rowCount"></span>
+    </div>
+  </div>
+
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <span class="eicon">📭</span>
+    <p>No hay solicitudes registradas todavía.</p>
+    <p style="margin-top:8px;font-size:13px;">Los proveedores deben completar el <a href="Formulario_Proveedores.html" style="color:var(--teal);">formulario</a> para aparecer aquí.</p>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeDetail()">
+  <div class="modal-box" id="detailContent"></div>
+</div>
+
+<!-- MODAL VISOR -->
+<div class="fpm" id="fpm" onclick="if(event.target===this)closeFpm()">
+  <div class="fpm-inner">
+    <div class="fpm-bar">
+      <span class="fname" id="fpmName"></span>
+      <button class="fpm-close" onclick="closeFpm()">✕</button>
+    </div>
+    <div class="fpm-content" id="fpmContent"></div>
+  </div>
+</div>
+
+<p class="footer-note">Panel Administrativo — Grupo CPC · Datos desde SharePoint vía n8n</p>
+
+<script>
+/* ── CONSTANTS ── */
+// ▶ Reemplazar con las URLs reales de los webhooks (n8n → Webhook Obtener Proveedores / Webhook Eliminar Proveedor)
+const N8N_DATA_URL   = 'https://unionganadera.app.n8n.cloud/webhook/obtener-proveedores';
+const N8N_DELETE_URL = 'https://unionganadera.app.n8n.cloud/webhook/eliminar-proveedor';
+
+const STORAGE_KEY = 'proveedores_cpc_v2';
+const DOC_LABELS  = { arca:'Constancia ARCA', cbu:'Certificado CBU', iibb:'Constancia IIBB', certFiscal:'Cert. Fiscal/Exención', docSocietaria:'Doc. Societaria' };
+const DOC_ICONS   = { arca:'📄', cbu:'🏦', iibb:'📋', certFiscal:'📃', docSocietaria:'📂' };
+
+/* ── STATE ── */
+let providers    = [];
+let sessionFiles = {};   // { providerId: { docKey: [{name, type, file: Blob}] } }
+let sortCol      = 'fechaRegistro';
+let sortDir      = -1;
+
+/* ── DB ── */
+function loadDB()  { try { providers = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e) { providers=[]; } }
+function saveDB()  { localStorage.setItem(STORAGE_KEY, JSON.stringify(providers)); }
+loadDB();
+
+/* ── AUTH ── */
+function tryLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginError');
+  if (u === 'admin' && p === 'admin123') {
+    sessionStorage.setItem('isAdmin','true');
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    err.style.display = 'none';
+    initDashboard();
+  } else {
+    err.textContent = 'Usuario o contraseña incorrectos.';
+    err.style.display = 'block';
+  }
+}
+function logout() {
+  sessionStorage.removeItem('isAdmin');
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+/* ── SORT ── */
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+  document.querySelectorAll('table.xls thead th').forEach(th => th.classList.remove('sort-asc','sort-desc'));
+  const COLS = ['','razonSocial','cuit','condicionIva','condicionIibb','provincia','banco','cbu','alias','titular','telefono','','fechaRegistro','estado',''];
+  const idx = COLS.indexOf(col);
+  if (idx >= 0) document.querySelectorAll('table.xls thead th')[idx]?.classList.add(sortDir===1?'sort-asc':'sort-desc');
+  renderTable();
+}
+
+/* ── TABLE ── */
+function renderTable() {
+  loadDB(); // pick up changes from form page
+  const filter  = document.getElementById('statusFilter').value;
+  const search  = (document.getElementById('searchBox').value||'').toLowerCase();
+  const tbody   = document.getElementById('xlsBody');
+  const empty   = document.getElementById('emptyState');
+  const wrap    = document.getElementById('excelWrap');
+
+  let list = providers
+    .filter(p => filter === 'todos' || p.estado === filter)
+    .filter(p => !search || p.razonSocial.toLowerCase().includes(search) || (p.cuit||'').includes(search))
+    .sort((a,b) => {
+      const va = a[sortCol]||'', vb = b[sortCol]||'';
+      return sortDir * (va < vb ? -1 : va > vb ? 1 : 0);
+    });
+
+  empty.style.display = providers.length === 0 ? 'block' : 'none';
+  wrap.style.display  = providers.length === 0 ? 'none'  : 'block';
+
+  tbody.innerHTML = '';
+  list.forEach((p, i) => {
+    const docNames = p.docNames || {};
+    // Chip de carpeta SharePoint (si está disponible)
+    const spChip = p.urlCarpeta
+      ? `<a class="doc-chip sp-chip" href="${esc(p.urlCarpeta)}" target="_blank" rel="noopener" title="Ver carpeta en SharePoint">📁 SP</a>`
+      : '';
+    const docChips = Object.entries(DOC_LABELS).map(([k, label]) => {
+      const names = docNames[k] || [];
+      const inSess = sessionFiles[p.id]?.[k];
+      if (inSess?.length) {
+        return `<span class="doc-chip" onclick="showDocFiles('${p.id}','${k}')" title="${esc(label)}: clic para ver/descargar">${DOC_ICONS[k]}${names.length > 1 ? ' '+names.length : ''}</span>`;
+      }
+      if (names.length) {
+        return `<span class="doc-chip missing" title="${esc(label)}: ${names.join(', ')} — ver en SharePoint">${DOC_ICONS[k]} ${names.length}</span>`;
+      }
+      return `<span class="doc-chip missing" title="${esc(label)}: no adjuntado">${DOC_ICONS[k]}</span>`;
+    }).join('');
+    const chips = spChip + docChips;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="xls-num">${i+1}</td>
+      <td><div class="row-header"><span>${esc(p.razonSocial)}</span><span class="row-email">${esc(p.emailAdmin)}</span></div></td>
+      <td>${esc(p.cuit)}</td>
+      <td>${esc(p.condicionIva)}</td>
+      <td>${esc(p.condicionIibb)}</td>
+      <td>${esc(p.provincia)}</td>
+      <td>${esc(p.banco)}</td>
+      <td style="font-family:monospace;font-size:11.5px;">${esc(p.cbu)}</td>
+      <td>${esc(p.alias)||'—'}</td>
+      <td>${esc(p.titular)}</td>
+      <td>${esc(p.telefono||'—')}</td>
+      <td>${chips}</td>
+      <td style="white-space:nowrap;">${fmtShort(p.fechaRegistro)}</td>
+      <td><span class="badge badge-${p.estado.toLowerCase()}">${p.estado}</span></td>
+      <td><div class="row-actions">
+        <button class="btn btn-secondary btn-xs" onclick="openDetail('${p.id}')">Ver</button>
+        ${p.estado !== 'Aprobado'  ? `<button class="btn btn-success btn-xs"  onclick="setStatus('${p.id}','Aprobado')">✓ Aprobar</button>`  : ''}
+        ${p.estado !== 'Rechazado' ? `<button class="btn btn-danger btn-xs"   onclick="setStatus('${p.id}','Rechazado')">✗ Rechazar</button>` : ''}
+        <button class="btn btn-secondary btn-xs" onclick="delProvider('${p.id}')" title="Eliminar">🗑</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('statTotal').textContent     = providers.length;
+  document.getElementById('statPendiente').textContent  = providers.filter(p=>p.estado==='Pendiente').length;
+  document.getElementById('statAprobado').textContent   = providers.filter(p=>p.estado==='Aprobado').length;
+  document.getElementById('statRechazado').textContent  = providers.filter(p=>p.estado==='Rechazado').length;
+  document.getElementById('rowCount').textContent = `${list.length} registro${list.length!==1?'s':''}`;
+}
+
+/* ── ACTIONS ── */
+function setStatus(id, estado) {
+  const p = providers.find(x=>x.id===id);
+  if (p) { p.estado = estado; p.fechaActualizacion = new Date().toISOString(); saveDB(); renderTable(); closeDetail(); }
+}
+async function delProvider(id) {
+  const p = providers.find(x => x.id === id);
+  const nombre = p ? p.razonSocial : id;
+  if (!confirm(`¿Eliminar a "${nombre}"?\n\nEsto borra su fila del Excel y su carpeta completa (con todos los archivos) en SharePoint. La acción no se puede deshacer.`)) return;
+
+  let avisoExtra = '';
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 25000);
+    const resp = await fetch(N8N_DELETE_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ id }),
+      signal:  controller.signal
+    });
+    clearTimeout(tid);
+
+    if (resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      if (data.exito === false) {
+        avisoExtra = '\n\n⚠️ ' + (data.mensaje || 'No se encontró en SharePoint. Se quitó solo de este panel.');
+      }
+    } else {
+      avisoExtra = '\n\n⚠️ No se pudo confirmar el borrado en SharePoint (HTTP ' + resp.status + '). Verifique manualmente la fila y la carpeta.';
+    }
+  } catch (err) {
+    console.warn('[eliminar proveedor]', err);
+    avisoExtra = '\n\n⚠️ Sin conexión con n8n/SharePoint. El proveedor se quitó solo de este panel; borre manualmente la fila del Excel y la carpeta en SharePoint si corresponde.';
+  }
+
+  providers = providers.filter(p=>p.id!==id);
+  delete sessionFiles[id];
+  await deleteProviderFilesFromIDB(id);
+  saveDB(); renderTable();
+
+  if (avisoExtra) alert('Proveedor eliminado del panel.' + avisoExtra);
+}
+
+/* ── DETAIL MODAL ── */
+function openDetail(id) {
+  const p = providers.find(x=>x.id===id);
+  if (!p) return;
+  const docNames = p.docNames || {};
+  const docsHtml = Object.entries(DOC_LABELS).map(([k, label]) => {
+    const names  = docNames[k] || [];
+    const inSess = sessionFiles[p.id]?.[k] || [];
+    if (!names.length && !inSess.length) return '';
+    const rows = inSess.length
+      ? inSess.map(f => `
+          <div class="doc-file-row">
+            <div class="doc-file-name">${fileIcon(f.type)} <span>${esc(f.name)}</span></div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-secondary btn-xs" onclick="previewFile('${id}','${k}','${esc(f.name)}')">Ver</button>
+              <button class="btn btn-secondary btn-xs" onclick="downloadFile('${id}','${k}','${esc(f.name)}')">⬇</button>
+            </div>
+          </div>`).join('')
+      : names.map(n=>`<div class="doc-file-row"><div class="doc-file-name">📎 ${esc(n)}</div><span style="font-size:11px;color:var(--ink-soft)">Importar ZIP para descargar</span></div>`).join('');
+    return `<p class="modal-doc-title">${DOC_ICONS[k]} ${label}</p>${rows}`;
+  }).join('') || '<p style="color:var(--ink-soft);font-size:13px;margin:12px 0;">Sin documentos registrados.</p>';
+
+  document.getElementById('detailContent').innerHTML = `
+    <h3>${esc(p.razonSocial)}</h3>
+    <span class="badge badge-${p.estado.toLowerCase()}" style="margin-bottom:4px;">${p.estado}</span>
+    <hr style="border:none;border-top:1px solid var(--line);margin:14px 0;">
+    <dl class="dl-grid">
+      <dt>CUIT</dt><dd>${esc(p.cuit)}</dd>
+      <dt>Condición IVA</dt><dd>${esc(p.condicionIva)}</dd>
+      <dt>Condición IIBB</dt><dd>${esc(p.condicionIibb)}</dd>
+      <dt>Domicilio</dt><dd>${esc(p.domicilio)}, ${esc(p.provincia)} CP ${esc(p.codigoPostal)}</dd>
+      <dt>Email</dt><dd>${esc(p.emailAdmin)}</dd>
+      <dt>Contacto</dt><dd>${esc(p.personaContacto)}${p.telefono?' · '+esc(p.telefono):''}</dd>
+      <dt>Banco</dt><dd>${esc(p.banco)}</dd>
+      <dt>CBU</dt><dd style="font-family:monospace;">${esc(p.cbu)}</dd>
+      <dt>Alias</dt><dd>${esc(p.alias)||'—'}</dd>
+      <dt>Titular</dt><dd>${esc(p.titular)}</dd>
+      <dt>Registrado</dt><dd>${fmtDate(p.fechaRegistro)}</dd>
+      ${p.observaciones?`<dt>Observaciones</dt><dd>${esc(p.observaciones)}</dd>`:''}
+      ${p.urlCarpeta?`<dt>SharePoint</dt><dd><a href="${esc(p.urlCarpeta)}" target="_blank" rel="noopener" style="color:var(--teal);">📁 Ver carpeta de archivos</a></dd>`:''}
+    </dl>
+    <hr style="border:none;border-top:1px solid var(--line);margin:14px 0;">
+    <p style="font-weight:700;font-size:13px;color:var(--navy-deep);margin-bottom:8px;">Constancias adjuntas</p>
+    ${docsHtml}
+    <div class="actions-bar">
+      ${p.estado!=='Rechazado'?`<button class="btn btn-danger"  onclick="setStatus('${p.id}','Rechazado')">Rechazar</button>`:''}
+      ${p.estado!=='Aprobado' ?`<button class="btn btn-success" onclick="setStatus('${p.id}','Aprobado')">Aprobar</button>`:''}
+      <button class="btn btn-secondary" onclick="closeDetail()">Cerrar</button>
+    </div>`;
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeDetail() { document.getElementById('detailModal').classList.remove('show'); }
+
+/* ── FILE OPS ── */
+function fileIcon(type) {
+  if (!type) return '📎';
+  if (type==='application/pdf') return '📕';
+  if (type.startsWith('image/')) return '🖼️';
+  return '📎';
+}
+function getSessFile(pid, docKey, fname) {
+  return (sessionFiles[pid]?.[docKey]||[]).find(f=>f.name===fname);
+}
+function previewFile(pid, docKey, fname) {
+  const f = getSessFile(pid, docKey, fname);
+  if (!f) { alert('Archivo no disponible. Importá el ZIP del proveedor.'); return; }
+  const blob = f.file instanceof Blob ? f.file : new Blob([f.file],{type:f.type});
+  const url  = URL.createObjectURL(blob);
+  document.getElementById('fpmName').textContent = f.name;
+  const content = document.getElementById('fpmContent');
+  content.innerHTML = f.type?.startsWith('image/')
+    ? `<img src="${url}" alt="${esc(f.name)}">`
+    : f.type==='application/pdf'
+    ? `<iframe src="${url}" title="${esc(f.name)}"></iframe>`
+    : `<p style="padding:28px;color:var(--ink-soft);">Vista previa no disponible.</p>`;
+  document.getElementById('fpm').classList.add('show');
+}
+function downloadFile(pid, docKey, fname) {
+  const f = getSessFile(pid, docKey, fname);
+  if (!f) { alert('Importá el ZIP del proveedor primero.'); return; }
+  const blob = f.file instanceof Blob ? f.file : new Blob([f.file],{type:f.type});
+  const url  = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'),{href:url,download:f.name});
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },2000);
+}
+function showDocFiles(pid, docKey) {
+  const files = sessionFiles[pid]?.[docKey]||[];
+  if (!files.length) return;
+  if (files.length===1) { previewFile(pid, docKey, files[0].name); return; }
+  openDetail(pid);
+}
+function closeFpm() {
+  document.getElementById('fpm').classList.remove('show');
+  document.getElementById('fpmContent').innerHTML='';
+}
+
+/* ── ZIP IMPORT ── */
+async function importZip(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value='';
+  const banner = document.getElementById('importBanner');
+  banner.style.display='none';
+  try {
+    const zip = await JSZip.loadAsync(file);
+    let metaRaw = null;
+    const xlsFile = Object.values(zip.files).find(f=>f.name.endsWith('datos_proveedor.xlsx')&&!f.dir);
+    if (xlsFile) {
+      const buf = await xlsFile.async('arraybuffer');
+      const wb  = XLSX.read(buf,{type:'array'});
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      if (rows.length) metaRaw = rows[0];
+    }
+    if (!metaRaw) {
+      showBanner('importBanner','banner-error','⚠️ No se encontró "datos_proveedor.xlsx" en el ZIP.');
+      return;
+    }
+    const importedCuit = (metaRaw['CUIT']||'').trim();
+    let prov = providers.find(p=>p.cuit===importedCuit);
+    const importedId = metaRaw['ID Solicitud']||prov?.id||('PROV-IMP-'+Date.now().toString().slice(-6));
+    if (!prov) {
+      prov = {
+        id: importedId,
+        razonSocial:   metaRaw['Razón Social']||'',
+        cuit:          importedCuit,
+        condicionIva:  metaRaw['Condición IVA']||'',
+        condicionIibb: metaRaw['Condición IIBB']||'',
+        domicilio:     metaRaw['Domicilio Fiscal']||'',
+        provincia:     metaRaw['Provincia']||'',
+        codigoPostal:  metaRaw['Código Postal']||'',
+        emailAdmin:    metaRaw['Email Administrativo']||'',
+        personaContacto: metaRaw['Persona de Contacto']||'',
+        telefono:      metaRaw['Teléfono']||'',
+        banco:         metaRaw['Banco']||'',
+        cbu:           metaRaw['CBU']||'',
+        alias:         metaRaw['Alias']||'',
+        titular:       metaRaw['Titular Cuenta']||'',
+        observaciones: metaRaw['Observaciones']||'',
+        docNames:      {},
+        fechaRegistro: new Date().toISOString(),
+        estado:        metaRaw['Estado']||'Pendiente'
+      };
+      providers.push(prov);
+      saveDB();
+    }
+    if (!sessionFiles[prov.id]) sessionFiles[prov.id]={};
+    let fileCount=0;
+    const idbByDoc = {}; // { docKey: [{name,type,file}] } para guardar en IDB al final
+    for (const [path, zf] of Object.entries(zip.files)) {
+      if (zf.dir||!path.startsWith('documentos/')) continue;
+      const parts=path.split('/');
+      if (parts.length<3) continue;
+      const docKey=parts[1], fname=parts.slice(2).join('/');
+      if (!fname) continue;
+      const ext  = fname.split('.').pop().toLowerCase();
+      const type = ext==='pdf'?'application/pdf':ext==='png'?'image/png':'image/jpeg';
+      const blob = new Blob([await zf.async('arraybuffer')],{type});
+      if (!sessionFiles[prov.id][docKey]) sessionFiles[prov.id][docKey]=[];
+      if (!sessionFiles[prov.id][docKey].find(f=>f.name===fname)) {
+        sessionFiles[prov.id][docKey].push({name:fname,type,file:blob});
+        if (!idbByDoc[docKey]) idbByDoc[docKey]=[];
+        idbByDoc[docKey].push({name:fname,type,file:blob});
+        fileCount++;
+      }
+      if (!prov.docNames) prov.docNames={};
+      if (!prov.docNames[docKey]) prov.docNames[docKey]=[];
+      if (!prov.docNames[docKey].includes(fname)) prov.docNames[docKey].push(fname);
+    }
+    // Persistir en IndexedDB para que estén disponibles en sesiones futuras
+    for (const [docKey, files] of Object.entries(idbByDoc)) {
+      await saveFilesToIDB(prov.id, docKey, files);
+    }
+    saveDB();
+    showBanner('importBanner','banner-success',`✅ ZIP importado: <strong>${esc(prov.razonSocial)}</strong> — ${fileCount} archivo(s) disponible(s). Hacé clic en los íconos de la columna Constancias para verlos.`);
+    renderTable();
+  } catch(err) {
+    console.error(err);
+    showBanner('importBanner','banner-error','⚠️ Error al leer el ZIP: '+err.message);
+  }
+}
+
+function showBanner(id, cls, html) {
+  const el = document.getElementById(id);
+  el.className = 'banner ' + cls;
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+/* ── EXPORT ── */
+function buildRows(list) {
+  return list.map(p=>({
+    'ID Solicitud': p.id, 'Razón Social': p.razonSocial, 'CUIT': p.cuit,
+    'Condición IVA': p.condicionIva, 'Condición IIBB': p.condicionIibb,
+    'Domicilio Fiscal': p.domicilio, 'Provincia': p.provincia, 'Código Postal': p.codigoPostal,
+    'Email Administrativo': p.emailAdmin, 'Persona de Contacto': p.personaContacto,
+    'Teléfono': p.telefono||'', 'Banco': p.banco, 'CBU': p.cbu,
+    'Alias': p.alias||'', 'Titular Cuenta': p.titular, 'Observaciones': p.observaciones||'',
+    'Archivos ARCA': ((p.docNames?.arca)||[]).join('; '),
+    'Archivos CBU':  ((p.docNames?.cbu) ||[]).join('; '),
+    'Archivos IIBB': ((p.docNames?.iibb)||[]).join('; '),
+    'Archivos Cert. Fiscal':    ((p.docNames?.certFiscal)   ||[]).join('; '),
+    'Archivos Doc. Societaria': ((p.docNames?.docSocietaria)||[]).join('; '),
+    'Fecha de Registro': fmtDate(p.fechaRegistro), 'Estado': p.estado
+  }));
+}
+function exportExcel() {
+  if (!providers.length) { alert('No hay registros para exportar.'); return; }
+  const sorted = [...providers].sort((a,b)=>new Date(a.fechaRegistro)-new Date(b.fechaRegistro));
+  const rows = buildRows(sorted);
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = Object.keys(rows[0]).map(k=>({wch:Math.max(14,k.length+2)}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Proveedores');
+  XLSX.writeFile(wb, 'registro_proveedores_CPC.xlsx');
+}
+function copyTSV() {
+  if (!providers.length) { alert('No hay registros.'); return; }
+  const sorted = [...providers].sort((a,b)=>new Date(a.fechaRegistro)-new Date(b.fechaRegistro));
+  const rows = buildRows(sorted);
+  const headers = Object.keys(rows[0]);
+  const tsv = [headers.join('\t')]
+    .concat(rows.map(r=>headers.map(h=>(r[h]||'').toString().replace(/\t/g,' ').replace(/\n/g,' ')).join('\t')))
+    .join('\n');
+  navigator.clipboard.writeText(tsv).then(()=>alert(`${rows.length} registros copiados. Pegá con Ctrl+V en Excel.`)).catch(()=>alert('Usá el botón Exportar Excel.'));
+}
+
+/* ── DEMO ── */
+function seedDemo() {
+  if (providers.length && !confirm('Ya hay registros. ¿Agregar ejemplos?')) return;
+  const demo = [
+    {razonSocial:'Distribuidora del Sur S.A.', cuit:'30-71234567-4', condicionIva:'Responsable Inscripto', condicionIibb:'Convenio Multilateral', domicilio:'Av. Rivadavia 4521', provincia:'CABA', codigoPostal:'1424', emailAdmin:'admin@distrisur.com.ar', personaContacto:'Marcela Funes', telefono:'11-5566-7788', banco:'Banco Galicia', cbu:'0070123420000012345678', alias:'DISTRISUR.PAGOS', titular:'Distribuidora del Sur S.A.', observaciones:'', estado:'Pendiente'},
+    {razonSocial:'Insumos Pampeanos SRL', cuit:'30-69887766-1', condicionIva:'Responsable Inscripto', condicionIibb:'Contribuyente Local', domicilio:'San Martín 980', provincia:'Santa Fe', codigoPostal:'2000', emailAdmin:'compras@insumospampeanos.com', personaContacto:'Hugo Bermúdez', telefono:'341-444-1212', banco:'Banco Santa Fe', cbu:'3300012340000098765432', alias:'', titular:'Insumos Pampeanos SRL', observaciones:'Entrega los martes.', estado:'Aprobado'},
+    {razonSocial:'Servicios Técnicos Cuyo', cuit:'27-32145698-3', condicionIva:'Monotributista', condicionIibb:'Régimen Simplificado', domicilio:'Belgrano 233', provincia:'Mendoza', codigoPostal:'5500', emailAdmin:'stecnicoscuyo@gmail.com', personaContacto:'Laura Ibáñez', telefono:'261-555-0001', banco:'Banco Nación', cbu:'0110099820000011223344', alias:'STC.MENDOZA', titular:'Laura Ibáñez', observaciones:'', estado:'Rechazado'},
+  ];
+  demo.forEach((d,i)=>providers.push({...d,id:'PROV-DEMO'+(i+1),docNames:{arca:['constancia_arca.pdf'],cbu:['cert_cbu.pdf'],iibb:['constancia_iibb.pdf']},fechaRegistro:new Date(Date.now()-i*86400000).toISOString()}));
+  saveDB(); renderTable();
+}
+
+/* ── UTILS ── */
+function fmtDate(iso) {
+  const d=new Date(iso);
+  return d.toLocaleDateString('es-AR')+' '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+}
+function fmtShort(iso) { return new Date(iso).toLocaleDateString('es-AR'); }
+function esc(str) { const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
+/* ── INDEXEDDB (compartido con Formulario_Proveedores.html) ── */
+const FILES_DB_NAME = 'cpc_proveedores_files_v1';
+const FILES_DB_VER  = 1;
+const FILES_STORE   = 'files';
+
+function openFilesDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(FILES_DB_NAME, FILES_DB_VER);
+    r.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(FILES_STORE)) {
+        const st = db.createObjectStore(FILES_STORE, { keyPath: 'key' });
+        st.createIndex('by_provider', 'providerId', { unique: false });
+      }
+    };
+    r.onsuccess = e => res(e.target.result);
+    r.onerror   = e => rej(e.target.error);
+  });
+}
+
+async function loadAllFilesFromIDB() {
+  try {
+    const db = await openFilesDB();
+    return new Promise((res, rej) => {
+      const tx  = db.transaction(FILES_STORE, 'readonly');
+      const st  = tx.objectStore(FILES_STORE);
+      const req = st.getAll();
+      req.onsuccess = e => {
+        const result = {};
+        for (const item of e.target.result) {
+          if (!result[item.providerId]) result[item.providerId] = {};
+          if (!result[item.providerId][item.docKey]) result[item.providerId][item.docKey] = [];
+          result[item.providerId][item.docKey].push({ name: item.filename, type: item.type, file: item.blob });
+        }
+        res(result);
+      };
+      req.onerror = e => rej(e.target.error);
+    });
+  } catch(e) {
+    console.warn('IDB load error:', e);
+    return {};
+  }
+}
+
+async function saveFilesToIDB(providerId, docKey, files) {
+  // Usado al importar ZIP
+  try {
+    const db = await openFilesDB();
+    const tx = db.transaction(FILES_STORE, 'readwrite');
+    const st = tx.objectStore(FILES_STORE);
+    for (const f of files) {
+      st.put({
+        key: `${providerId}||${docKey}||${f.name}`,
+        providerId, docKey,
+        filename: f.name, type: f.type,
+        blob: f.file
+      });
+    }
+    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+  } catch(e) { console.warn('IDB save error:', e); }
+}
+
+async function deleteProviderFilesFromIDB(providerId) {
+  try {
+    const db = await openFilesDB();
+    await new Promise((res, rej) => {
+      const tx  = db.transaction(FILES_STORE, 'readwrite');
+      const st  = tx.objectStore(FILES_STORE);
+      const idx = st.index('by_provider');
+      const req = idx.openKeyCursor(IDBKeyRange.only(providerId));
+      req.onsuccess = e => {
+        const cursor = e.target.result;
+        if (cursor) { st.delete(cursor.primaryKey); cursor.continue(); }
+        else res();
+      };
+      req.onerror = e => rej(e.target.error);
+    });
+  } catch(e) { console.warn('IDB delete error:', e); }
+}
+
+/* ── SHAREPOINT DATA SOURCE ── */
+function setDataSourceBanner(tipo, html) {
+  const el = document.getElementById('dataSourceBanner');
+  el.className = 'sp-source-banner show sp-source-' + tipo;
+  el.innerHTML = tipo === 'loading'
+    ? `<span class="sp-spinner"></span><span>${html}</span>`
+    : html;
+}
+
+async function loadFromSharePoint() {
+  if (N8N_DATA_URL.includes('TU_INSTANCIA_N8N')) {
+    setDataSourceBanner('warn', '⚙️ <strong>N8N_DATA_URL no configurada.</strong> Mostrando datos locales. Reemplace la constante en el código con la URL del webhook de n8n.');
+    loadDB(); return false;
+  }
+
+  setDataSourceBanner('loading', 'Cargando proveedores desde SharePoint…');
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 20000);
+    const resp = await fetch(N8N_DATA_URL, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
+    });
+    clearTimeout(tid);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    const data = await resp.json();
+    const spProveedores = data.proveedores || [];
+
+    // Leer estado local (aprobaciones/rechazos hechos en el panel)
+    let localList = [];
+    try { localList = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) {}
+    const localById = {};
+    localList.forEach(p => { localById[p.id] = p; });
+
+    // Fusionar: SharePoint es la fuente de verdad. Solo se superpone el estado
+    // (aprobado/rechazado) marcado localmente en el panel, que todavía no
+    // existe como columna editable vía n8n.
+    providers = spProveedores.map(sp => ({
+      ...sp,
+      estado:              localById[sp.id]?.estado              || sp.estado,
+      fechaActualizacion:  localById[sp.id]?.fechaActualizacion  || undefined
+    }));
+
+    // Registros locales que no aparecen en SharePoint (altas que nunca
+    // terminaron de sincronizar, pruebas viejas, etc.) NO se muestran en la
+    // tabla para no mezclar datos falsos con el registro real. Se avisa para
+    // que se puedan descartar o reintentar manualmente.
+    const huerfanos = localList.filter(lp => !providers.find(p => p.id === lp.id));
+
+    saveDB(); // la caché local queda igual a lo que realmente hay en SharePoint (+ estados locales)
+
+    const n = providers.length;
+    if (huerfanos.length > 0) {
+      const plural = huerfanos.length !== 1;
+      setDataSourceBanner('warn',
+        `✅ ${n} proveedor${n!==1?'es':''} cargado${n!==1?'s':''} desde SharePoint. ` +
+        `⚠️ Hay ${huerfanos.length} registro${plural?'s':''} guardado${plural?'s':''} en este navegador que no ${plural?'llegaron':'llegó'} a SharePoint ` +
+        `(no se muestra${plural?'n':''} en la tabla): ${huerfanos.map(h => esc(h.razonSocial||h.id)).join(', ')}. ` +
+        `<button type="button" class="btn btn-secondary btn-sm" style="margin-left:6px;" onclick="descartarHuerfanosLocales()">Descartar</button>`
+      );
+    } else {
+      setDataSourceBanner('ok', `✅ ${n} proveedor${n!==1?'es':''} cargado${n!==1?'s':''} desde SharePoint.`);
+    }
+    return true;
+  } catch(err) {
+    loadDB(); // fallback localStorage
+    const msg = err.name === 'AbortError'
+      ? '⚠️ Tiempo de espera agotado. Mostrando datos locales (sin conexión a n8n).'
+      : `⚠️ No se pudo conectar con n8n/SharePoint. Mostrando datos locales. <small style="opacity:.7">(${err.message})</small>`;
+    setDataSourceBanner('warn', msg);
+    console.warn('[SharePoint load]', err);
+    return false;
+  }
+}
+
+async function refreshFromSharePoint() {
+  await loadFromSharePoint();
+  renderTable();
+}
+
+// La caché local (STORAGE_KEY) ya quedó igual a los datos reales de SharePoint
+// tras el último loadFromSharePoint(); esto solo limpia el aviso de la pantalla.
+function descartarHuerfanosLocales() {
+  const n = providers.length;
+  setDataSourceBanner('ok', `✅ ${n} proveedor${n!==1?'es':''} cargado${n!==1?'s':''} desde SharePoint.`);
+}
+
+/* ── INIT ── */
+async function initDashboard() {
+  sessionFiles = await loadAllFilesFromIDB();
+  await loadFromSharePoint();
+  renderTable();
+}
+
+if (sessionStorage.getItem('isAdmin')==='true') {
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  initDashboard();
+}
+</script>
+</body>
+</html>
