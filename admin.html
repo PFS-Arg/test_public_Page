@@ -534,13 +534,19 @@ function openDetail(id) {
       <dt>CUIT</dt><dd>${esc(p.cuit)}</dd>
       <dt>Condición IVA</dt><dd>${esc(p.condicionIva)}</dd>
       <dt>Condición IIBB</dt><dd>${esc(p.condicionIibb)}</dd>
-      <dt>Domicilio</dt><dd>${esc(p.domicilio)}, ${esc(p.provincia)} CP ${esc(p.codigoPostal)}</dd>
+      <dt>Servicio prestado</dt><dd>${esc(p.servicioPrestado)||'—'}</dd>
+      <dt>Domicilio</dt><dd>${esc(p.domicilio)}${p.localidad?', '+esc(p.localidad):''}, ${esc(p.provincia)} CP ${esc(p.codigoPostal)}</dd>
+      <dt>Condición de pago</dt><dd>${esc(p.condicionPago)||'—'}</dd>
+      <dt>Medio de pago</dt><dd>${esc(p.medioPago)||'—'}</dd>
       <dt>Email</dt><dd>${esc(p.emailAdmin)}</dd>
       <dt>Contacto</dt><dd>${esc(p.personaContacto)}${p.telefono?' · '+esc(p.telefono):''}</dd>
       <dt>Banco</dt><dd>${esc(p.banco)}</dd>
       <dt>CBU</dt><dd style="font-family:monospace;">${esc(p.cbu)}</dd>
       <dt>Alias</dt><dd>${esc(p.alias)||'—'}</dd>
       <dt>Titular</dt><dd>${esc(p.titular)}</dd>
+      <dt>Tipo de cuenta</dt><dd>${esc(p.tipoCuenta)||'—'}</dd>
+      <dt>Moneda</dt><dd>${esc(p.moneda)||'—'}</dd>
+      <dt>N° de cuenta</dt><dd style="font-family:monospace;">${esc(p.numeroCuenta)||'—'}</dd>
       <dt>Registrado</dt><dd>${fmtDate(p.fechaRegistro)}</dd>
       ${p.observaciones?`<dt>Observaciones</dt><dd>${esc(p.observaciones)}</dd>`:''}
       ${p.urlCarpeta?`<dt>SharePoint</dt><dd><a href="${esc(p.urlCarpeta)}" target="_blank" rel="noopener" style="color:var(--teal);">📁 Ver carpeta de archivos</a></dd>`:''}
@@ -698,10 +704,14 @@ function buildRows(list) {
   return list.map(p=>({
     'ID Solicitud': p.id, 'Razón Social': p.razonSocial, 'CUIT': p.cuit,
     'Condición IVA': p.condicionIva, 'Condición IIBB': p.condicionIibb,
-    'Domicilio Fiscal': p.domicilio, 'Provincia': p.provincia, 'Código Postal': p.codigoPostal,
+    'Servicio Prestado': p.servicioPrestado||'',
+    'Domicilio Fiscal': p.domicilio, 'Localidad': p.localidad||'', 'Provincia': p.provincia, 'Código Postal': p.codigoPostal,
+    'Condición de Pago': p.condicionPago||'', 'Medio de Pago': p.medioPago||'',
     'Email Administrativo': p.emailAdmin, 'Persona de Contacto': p.personaContacto,
     'Teléfono': p.telefono||'', 'Banco': p.banco, 'CBU': p.cbu,
-    'Alias': p.alias||'', 'Titular Cuenta': p.titular, 'Observaciones': p.observaciones||'',
+    'Alias': p.alias||'', 'Titular Cuenta': p.titular,
+    'Tipo de Cuenta': p.tipoCuenta||'', 'Moneda': p.moneda||'', 'N° Cuenta': p.numeroCuenta||'',
+    'Observaciones': p.observaciones||'',
     'Archivos ARCA': ((p.docNames?.arca)||[]).join('; '),
     'Archivos CBU':  ((p.docNames?.cbu) ||[]).join('; '),
     'Archivos IIBB': ((p.docNames?.iibb)||[]).join('; '),

@@ -38,6 +38,7 @@ html,body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-
 .grid.g3{grid-template-columns:1fr 1fr 1fr;}
 .field{display:flex;flex-direction:column;gap:5px;}
 .field.full{grid-column:1/-1;}
+.subsection{font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--line);padding-top:14px;margin-top:4px;}
 label{font-size:12.5px;font-weight:600;color:var(--navy-deep);letter-spacing:.2px;}
 label .req{color:var(--red);margin-left:2px;}
 label .opt{color:var(--ink-soft);font-weight:400;font-size:11px;margin-left:4px;}
@@ -261,6 +262,11 @@ textarea{resize:vertical;min-height:68px;}
             <input type="text" name="razonSocial" placeholder="Ej: Distribuidora del Sur S.A.">
             <span class="err-msg">Ingrese la razón social (mínimo 3 caracteres).</span>
           </div>
+          <div class="field full" data-field="servicioPrestado">
+            <label>Servicio prestado<span class="req">*</span></label>
+            <input type="text" name="servicioPrestado" placeholder="Ej: Transporte de hacienda, insumos veterinarios…">
+            <span class="err-msg">Indique el servicio o producto que provee.</span>
+          </div>
           <div class="field" data-field="cuit">
             <label>CUIT<span class="req">*</span></label>
             <input type="text" name="cuit" placeholder="20-12345678-9" maxlength="13">
@@ -294,6 +300,11 @@ textarea{resize:vertical;min-height:68px;}
             <input type="text" name="domicilio" placeholder="Calle, número, piso/depto.">
             <span class="err-msg">Ingrese el domicilio fiscal.</span>
           </div>
+          <div class="field" data-field="localidad">
+            <label>Localidad<span class="req">*</span></label>
+            <input type="text" name="localidad" placeholder="Ej: Rosario">
+            <span class="err-msg">Ingrese la localidad.</span>
+          </div>
           <div class="field" data-field="provincia">
             <label>Provincia<span class="req">*</span></label>
             <select name="provincia">
@@ -313,6 +324,30 @@ textarea{resize:vertical;min-height:68px;}
             <label>Código postal<span class="req">*</span></label>
             <input type="text" name="codigoPostal" placeholder="Ej: 1425">
             <span class="err-msg">Ingrese el código postal.</span>
+          </div>
+          <div class="field full"><p class="subsection">Condiciones comerciales</p></div>
+          <div class="field" data-field="condicionPago">
+            <label>Condición de pago<span class="req">*</span></label>
+            <select name="condicionPago">
+              <option value="">Seleccionar…</option>
+              <option>Contado</option>
+              <option>15 días</option>
+              <option>30 días</option>
+              <option>45 días</option>
+              <option>60 días</option>
+              <option>90 días</option>
+            </select>
+            <span class="err-msg">Seleccione una opción.</span>
+          </div>
+          <div class="field" data-field="medioPago">
+            <label>Medio de pago<span class="req">*</span></label>
+            <select name="medioPago" id="medioPagoSelect">
+              <option value="">Seleccionar…</option>
+              <option>Transferencia</option>
+              <option>Cheque</option>
+            </select>
+            <span class="hint">Al elegirlo se habilitan los datos bancarios.</span>
+            <span class="err-msg">Seleccione el medio de pago.</span>
           </div>
         </div>
       </div>
@@ -340,8 +375,8 @@ textarea{resize:vertical;min-height:68px;}
         </div>
       </div>
 
-      <!-- 3. Bancario -->
-      <div class="card">
+      <!-- 3. Bancario (visible solo con medio de pago Transferencia o Cheque) -->
+      <div class="card" id="bankCard" style="display:none;">
         <p class="section-title"><span class="num">3</span>Datos bancarios</p>
         <p class="section-desc">Cuenta donde la empresa realizará los pagos.</p>
         <div class="grid">
@@ -363,6 +398,29 @@ textarea{resize:vertical;min-height:68px;}
             <label>Titular de la cuenta<span class="req">*</span></label>
             <input type="text" name="titular" placeholder="Nombre del titular">
             <span class="err-msg">Ingrese el titular de la cuenta.</span>
+          </div>
+          <div class="field" data-field="tipoCuenta">
+            <label>Tipo de cuenta<span class="req">*</span></label>
+            <select name="tipoCuenta">
+              <option value="">Seleccionar…</option>
+              <option>Cuenta Corriente</option>
+              <option>Caja de Ahorro</option>
+            </select>
+            <span class="err-msg">Seleccione el tipo de cuenta.</span>
+          </div>
+          <div class="field" data-field="moneda">
+            <label>Moneda<span class="req">*</span></label>
+            <select name="moneda">
+              <option value="">Seleccionar…</option>
+              <option value="ARS">Pesos (ARS)</option>
+              <option value="USD">Dólares (USD)</option>
+            </select>
+            <span class="err-msg">Seleccione la moneda.</span>
+          </div>
+          <div class="field full" data-field="numeroCuenta">
+            <label>Número de cuenta corriente<span class="req">*</span></label>
+            <input type="text" name="numeroCuenta" placeholder="Ej: 0000-1-12345678-0">
+            <span class="err-msg">Ingrese el número de cuenta.</span>
           </div>
         </div>
       </div>
@@ -569,6 +627,16 @@ document.querySelector('input[name=cbu]').addEventListener('input', e => {
   e.target.value = digitsOnly(e.target.value).slice(0,22);
 });
 
+/* ── MEDIO DE PAGO → habilita datos bancarios ── */
+function bankEnabled() {
+  const v = document.getElementById('medioPagoSelect').value;
+  return v === 'Transferencia' || v === 'Cheque';
+}
+function toggleBankCard() {
+  document.getElementById('bankCard').style.display = bankEnabled() ? 'block' : 'none';
+}
+document.getElementById('medioPagoSelect').addEventListener('change', toggleBankCard);
+
 /* ── PASO 0: VERIFICACIÓN DE CUIT (alta vs. modificación) ── */
 let isUpdate = false;
 let existingProvider = null;
@@ -589,12 +657,14 @@ function setDocsOptional(optional) {
 
 function prefillForm(p) {
   const campos = ['razonSocial','cuit','condicionIva','condicionIibb','domicilio','provincia',
-    'codigoPostal','emailAdmin','personaContacto','telefono','banco','cbu','alias','titular','observaciones'];
+    'codigoPostal','emailAdmin','personaContacto','telefono','banco','cbu','alias','titular','observaciones',
+    'servicioPrestado','localidad','condicionPago','medioPago','tipoCuenta','moneda','numeroCuenta'];
   const form = document.getElementById('providerForm');
   campos.forEach(name => {
     const el = form.querySelector(`[name="${name}"]`);
     if (el && p[name] !== undefined) el.value = p[name];
   });
+  toggleBankCard();
 }
 
 async function checkCuitAndProceed() {
@@ -644,6 +714,7 @@ async function checkCuitAndProceed() {
 
   // Limpiar formulario y adjuntos antes de mostrar la pantalla correspondiente
   document.getElementById('providerForm').reset();
+  toggleBankCard();
   pendingUploads = {};
   document.querySelectorAll('.drop-zone').forEach(dz => {
     dz.classList.remove('has-files','required-empty');
@@ -685,7 +756,8 @@ function validate(formEl) {
   const g  = n => (fd.get(n)||'').toString().trim();
   let ok = true;
   ['razonSocial','cuit','condicionIva','condicionIibb','domicilio','provincia',
-   'codigoPostal','emailAdmin','personaContacto','telefono','banco','cbu','titular'].forEach(n => setErr(n, false));
+   'codigoPostal','emailAdmin','personaContacto','telefono','banco','cbu','titular',
+   'servicioPrestado','localidad','condicionPago','medioPago','tipoCuenta','moneda','numeroCuenta'].forEach(n => setErr(n, false));
 
   if (g('razonSocial').length < 3) { setErr('razonSocial', true); ok = false; }
   const cn = digitsOnly(g('cuit'));
@@ -696,15 +768,24 @@ function validate(formEl) {
   // actualizar sus datos y documentación.
   if (!g('condicionIva'))   { setErr('condicionIva', true);   ok = false; }
   if (!g('condicionIibb'))  { setErr('condicionIibb', true);  ok = false; }
+  if (!g('servicioPrestado')) { setErr('servicioPrestado', true); ok = false; }
   if (!g('domicilio'))      { setErr('domicilio', true);      ok = false; }
+  if (!g('localidad'))      { setErr('localidad', true);      ok = false; }
   if (!g('provincia'))      { setErr('provincia', true);      ok = false; }
   if (!g('codigoPostal'))   { setErr('codigoPostal', true);   ok = false; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g('emailAdmin'))) { setErr('emailAdmin', true); ok = false; }
   if (!g('personaContacto')) { setErr('personaContacto', true); ok = false; }
   if (!g('telefono'))       { setErr('telefono', true);       ok = false; }
-  if (!g('banco'))          { setErr('banco', true);          ok = false; }
-  if (g('cbu').length !== 22) { setErr('cbu', true);          ok = false; }
-  if (!g('titular'))        { setErr('titular', true);        ok = false; }
+  if (!g('condicionPago'))  { setErr('condicionPago', true);  ok = false; }
+  if (!g('medioPago'))      { setErr('medioPago', true);      ok = false; }
+  if (bankEnabled()) {
+    if (!g('banco'))          { setErr('banco', true);          ok = false; }
+    if (g('cbu').length !== 22) { setErr('cbu', true);          ok = false; }
+    if (!g('titular'))        { setErr('titular', true);        ok = false; }
+    if (!g('tipoCuenta'))     { setErr('tipoCuenta', true);     ok = false; }
+    if (!g('moneda'))         { setErr('moneda', true);         ok = false; }
+    if (!g('numeroCuenta'))   { setErr('numeroCuenta', true);   ok = false; }
+  }
 
   const docErrEl = document.getElementById('docError');
   const docsRequeridos = isUpdate ? [] : REQUIRED_DOCS;
@@ -772,6 +853,9 @@ document.getElementById('providerForm').addEventListener('submit', async functio
     emailAdmin: g('emailAdmin'), personaContacto: g('personaContacto'), telefono: g('telefono'),
     banco: g('banco'), cbu: g('cbu'), alias: g('alias'), titular: g('titular'),
     observaciones: g('observaciones'),
+    servicioPrestado: g('servicioPrestado'), localidad: g('localidad'),
+    condicionPago: g('condicionPago'), medioPago: g('medioPago'),
+    tipoCuenta: g('tipoCuenta'), moneda: g('moneda'), numeroCuenta: g('numeroCuenta'),
     docNames: Object.fromEntries(
       Object.entries(pendingUploads).map(([k, files]) => [k, files.map(f => f.name)])
     ),
@@ -862,6 +946,7 @@ document.getElementById('providerForm').addEventListener('submit', async functio
 /* ── RESET ── */
 function resetForm() {
   document.getElementById('providerForm').reset();
+  toggleBankCard();
   pendingUploads = {};
   isUpdate = false;
   existingProvider = null;
